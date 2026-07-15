@@ -1,0 +1,678 @@
+2项目课程系列之Elasticsearch - 8.pdf
+
+## 安装
+
+elasticsearch，需要安装适配jdk版本的对应版本
+
+包含了安装方法
+
+由于默认root用户不能创建elasticsearch的证书，需要使用其他用户创建
+
+搭建完毕后使用es插件检查是否搭建成功
+
+!image.png
+
+!image.png
+
+## 安装Kibana 用来观察es的可视化数据
+
+配置文件记得更改
+
+启动用户
+
+!image.png
+
+!image.png
+
+## es的基础功能
+
+索引操作
+
+!image.png
+
+1.创建索引
+
+PUT 索引名（名称需要唯一且小写）
+
+判断是否存在
+
+head 索引名
+
+查询索引
+
+GET 索引名
+
+!image.png
+
+创建索引时更改配置 是JSON格式的主体内容  不允许修改索引配置，只能创建时进行配置
+
+!image.png
+
+!image.png
+
+## 文档是es搜索的最小单位
+
+!image.png
+
+可以手动创建唯一标识，也可以自动，手动在创建所用后面加上/id号，指定id为唯一标识，自动是自动生成
+
+!image.png
+
+!image.png
+
+修改数据
+
+使用PUT
+
+!image.png
+
+也可以使用post 但是也需要指定唯一标识 没有这个标识会新增数据
+
+!image.png
+
+删除为
+不指定唯一标识需要使用post操作新增后操作
+
+!image.png
+
+## 数据搜索
+
+### 查询
+
+新增数据 _bulk为批量添加
+
+!image.png
+
+查询所有数据 _search为查询所有数据
+
+!image.png
+
+无条件查询所有
+
+!image.png
+
+查询有条件匹配内容
+
+!image.png
+
+数据 zahang san为两个关键词需要匹配上至少一个关键词才查询得到
+
+可以同时查询到zhang li的关键词的
+
+!image.png
+
+如果要完整关键词匹配需要使用 如下操作
+
+!image.png
+
+此时完整查查不到zhang san，因为添加的时候已经是分词效果
+
+对查询结果进行限制 只看满足限制了的数据
+
+!image.png
+
+多条件组合查询 为or逻辑满足一个即可
+
+!image.png
+
+排序后查询
+
+query是用来匹配查询的
+
+默认是按照插入顺序排序
+
+!image.png
+
+分页查询
+
+from是从第几条开始
+
+size为显示条数
+
+!image.png
+
+!image.png
+
+### 聚合搜索
+
+分组查询
+
+!image.png
+
+优化显示结果使用size 0 不显示前面数据
+
+!image.png
+
+求和
+
+!image.png
+
+求平均值
+
+!image.png
+
+显示前几名
+
+!image.png
+
+排序后显示前几名
+
+!image.png
+
+## 索引模板
+
+es默认提供了默认配置
+
+!image.png
+
+但是自己修改需要一个一个更改
+
+为了避免麻烦由模板模式，先创建模板应用到后续索引去
+
+创建模板
+
+模板可以多次创建，支持修改
+
+需要满足了模板要求的才会应用模板
+
+!image.png
+
+查看模板
+
+!image.png
+
+删除模板
+
+!image.png
+
+## 中文分词
+
+es会把数据做一个分词操作 用空格切分 但是中文一个字就切分一次
+
+!image.png
+
+使用插件IK 可以优化中文切分
+
+!image.png
+
+!image.png
+
+放置地址
+
+!image.png
+
+!image.png
+
+使用smart
+
+!image.png
+
+使用max word
+
+!image.png
+
+如果想要自定义分词器需要在ik中自定义
+
+!image.png
+
+创建字典以dic结尾的文件 并写入需要切分的文字
+
+!image.png
+
+修改配置文件
+
+!image.png
+
+重启
+
+## 评分机制
+
+!image.png
+
+查看分数
+
+!image.png
+
+解释分数怎么来的
+
+!image.png
+
+TF计算公式
+
+!image.png
+
+IDF计算公式  log为ln
+
+!image.png
+
+!image.png
+
+评分公式
+
+boost为权重系数
+
+!image.png
+
+分数越高查询排序越靠前
+
+### 案例
+
+准备数据
+
+!image.png
+
+查询
+
+!image.png
+
+此处分词段数为4，文档数为3
+
+### 不改变文档数据 提升某些文档权重
+
+准备数据
+
+!image.png
+
+查询数据
+
+!image.png
+
+先要让spark处于上方排序
+
+可以直接更改权重实现 此处将spark权重为2 实现了排序在上方
+
+!image.png
+
+## es软件新功能 java api
+
+1.增加依赖关系在maven中
+
+2.配置
+
+!image.png
+
+3.创建certs包存储证书
+
+4.新建ESClient客户端
+
+注意证书路径和用户名密码以及默认服务器类型和端口 连接类型
+
+构建传输对象，并构建同步操作对象和异步操作对象 同步需要关闭 异步不需要关闭
+
+!image.png
+
+执行不报错就是正确的
+
+### 基本api操作 索引
+
+!image.png
+
+final拿到了索引客户端 可以进行索引操作了
+
+!image.png
+
+!image.png
+
+创建完毕索引此时
+
+进行查询索引的编码
+
+!image.png
+
+可以查询各种索引的状态根据此时
+
+删除索引
+
+!image.png
+
+### 简化索引操作
+
+利用lambda表达式简化操作
+
+这个查询和上面的查询索引等价
+
+!image.png
+
+这里的判断索引是否存在与上面等价
+
+!image.png
+
+删除也试等价
+
+!image.png
+
+### 文档操作
+
+添加文档基于的对象 实现了序列化接口
+
+!image.png
+
+创建文档数据
+
+!image.png
+
+批量添加
+
+依次创建数据 并批量添加 然后同步操作关闭
+
+!image.png
+
+删除文档
+
+!image.png
+
+### 简化文档操作利用lambda表达式
+
+简化插入一条数据
+
+!image.png
+
+简化批量操作
+
+需要提前准备好数据
+
+!image.png
+
+!image.png
+
+文档删除
+
+!image.png
+
+### 文档查询
+
+语句如下 需要一个一个对象传递
+
+!image.png
+
+优化查询语句
+
+!image.png
+
+### 异步客户端操作
+
+之前的都是同步客户端操作
+
+使用异步客户端
+
+需要回调操作看是否创建完成
+
+!image.png
+
+如果创建完成后需要其他操纵使用thenaply 处理完在进行下一步
+
+!image.png
+
+### EQL操作 事件查询语言
+
+!image.png
+
+数据与数据之间建立关系
+
+基本使用
+
+!image.png
+
+此处用电商数据作为示例 做了首页跳转商品详情之类信息
+
+!image.png
+
+数据窗口搜索 即条件查询
+
+!image.png
+
+!image.png
+
+统计符合条件数据
+
+!image.png
+
+事件序列 查看固定sessionid条件下先去login再去商品详情也的用户
+
+!image.png
+
+### EQL安全检测
+
+!image.png
+
+准备数据
+
+!image.png
+
+获取事件计数数量
+
+!image.png
+
+!image.png
+
+检查命令行参数
+
+!image.png
+
+!image.png
+
+检查恶意脚本加载
+
+!image.png
+
+!image.png
+
+检测攻击成功可能性
+
+!image.png
+
+### SQL操作
+
+之前以es特有的操作成为DSL操作 现在es也支持sql操作
+
+!image.png
+
+与数据库对应关系
+
+!image.png
+
+!image.png
+
+!image.png
+
+数据准备
+
+!image.png
+
+!image.png
+
+第一个sql查询
+
+查询结果按照txt展示
+
+!image.png
+
+!image.png
+
+!image.png
+
+### SQL于DSL关系
+
+过滤 >500的数据
+
+!image.png
+
+返回json数据
+
+!image.png
+
+按照DSL展示
+
+!image.png
+
+混合使用dsl和sql
+
+!image.png
+
+### 常用SQL操作
+
+!image.png
+
+查询指定索引
+
+!image.png
+
+查询索引结构 外层需要三引号包围 内层需要双引号包围
+
+!image.png
+
+条件查询
+
+!image.png
+
+分组操作
+
+!image.png
+
+having操作
+
+!image.png
+
+排序操作
+
+!image.png
+
+限定查询
+
+!image.png
+
+游标查询 准备临时缓冲区 在临时区查询
+
+将多余未取出数据放到缓冲区
+
+!image.png
+
+!image.png
+
+未返回那么游标读取完毕
+
+关闭缓冲去使用如下指令 /close
+
+!image.png
+
+### 聚合操作
+
+!image.png
+
+运算
+
+!image.png
+
+运算符
+
+!image.png
+
+数学运算符
+
+!image.png
+
+类型转换
+
+!image.png
+
+模糊查询  /表示转义
+
+!image.png
+
+like中*表示name是这样 rlike才是中间由0-多个数据
+
+聚合分析函数
+
+!image.png
+
+分组函数
+
+!image.png
+
+数学通用函数
+
+!image.png
+
+日期时间函数
+
+!image.png
+
+全文检索函数
+
+!image.png
+
+字符串检索函数
+
+!image.png
+
+!image.png
+
+条件分支函数
+
+!image.png
+
+系统函数 获取当前用户或者集群信息
+
+!image.png
+
+### 客户端工具DataGrip
+
+!image.png
+
+创建数据源 配置驱动需要使用安全证书访问
+
+!image.png
+
+配置参数
+
+### es的NLP功能
+
+!image.png
+
+nlp演示
+
+!image.png
+
+需要放置在plugins中去
+
+配置yml
+
+!image.png
+
+!image.png
+
+!image.png
+
+### es的优化
+
+!image.png
+
+!image.png
+
+分片缓存 默认不开启需要配置
+
+!image.png
+
+查询缓存 只对特定的类有效
+
+!image.png
+
+问题
+
+!image.png
+
+### 减少堆内存大小问题
+
+其他基本是堆越大越好 es是合适值较好因为需要存储索引
+
+!image.png
+
+### 功能优化
+
+!image.png
+
+!image.png
+
+!image.png
+
+!image.png
