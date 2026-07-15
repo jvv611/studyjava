@@ -1,0 +1,151 @@
+目前有B/S架构最为常用开发浏览器服务器，其易于升级维护
+
+!image.png
+
+## Http部分
+
+http是基于tcp协议的
+
+有一次请求就要有一次响应，默认是get请求
+
+http协议是没有记忆的协议，每一次请求都是独立的（使用cookie，Session的java技术来解决）
+
+!image.png
+
+### 请求数据格式
+
+具有请求行（请求方式，请求路径，http协议版本），请求头以及请求体
+
+!image.png
+
+get请求大小有限制，post没有限制
+
+get参数写在url中，，没有请求体，post具有请求体
+
+### 响应数据格式
+
+具有响应行（状态行，具有http版本协议，响应状态码，ok表示状态码描述），响应头，响应体
+
+响应数据可以不只是文本，还可以是音频，视频之类的
+
+【404资源不存在】
+
+!image.png
+
+F12查看各种浏览器问题
+
+## WEB服务器
+
+web服务器，使用http协议发送请求
+
+封装了http协议，方便开发，并且传递html保存了需要传递的数据
+
+!image.png
+
+### tomcat
+
+tomcat的基础与安装
+
+tomcat是一个轻量级的web服务器
+
+!image.png
+
+tomcat存储在E:\tomcat文件夹下，目前有两个版本
+
+bin目录下的start.up可以启动tomcat，control+c可以关闭
+
+项目配置
+
+修改conf下的server.xml修改端口配置，69行
+
+!image.png
+
+部署项目方式
+
+!image.png
+
+方式1只需要访问localhost:8080/项目名/网页,这个页面即可访问对应项目资源
+
+方式2将需要目录的下一级打包为zip，更改为.war打包到tomcat的webapps的目录下
+
+### 在IDEA中创建web项目
+
+!image.png
+
+java的代码以及pom的依赖存储到lib下去
+
+!image.png
+
+创建流程如下
+
+!image.png
+
+web项目需要打包为war包
+
+JBL的安装
+
+在插件中装入，JBL安装JBLJavaToWeb
+
+集成Tomcat的项目部署
+
+在Add Configuration中添加
+
+使用Configure选择tomcat所在文件夹
+
+在deployement标签中添加需要部署的项目
+
+!image.png
+
+可以每个项目都部署一个tomcat，避免频繁移除和添加项目
+
+## Servelet
+
+servelet是动态资源，没有main方法需要web服务器才能运行
+
+!image.png
+
+### 环境准备
+
+!image.png
+
+部署完后服务器地址应该是
+
+localhost:8080/项目地址/servelet地址 才能访问到
+
+### servelet执行流程
+
+!image.png
+
+### servelet生命周期
+
+!image.png
+
+!image.png
+
+所以所有servelet只有第一次访问才会被创建，创建大的servelet会导致访问慢，需要把经常访问到的servelet在项目运行时创建，使用如下配置即可
+
+!image.png
+
+### servelet体系结构
+
+!image.png
+
+这里也需要@WebServelet（）注解，并且与其他的这个注解路径不能一样
+
+### servelet value配置路径
+
+!image.png
+
+!image.png
+
+优先级
+
+!image.png
+
+## XML配置servelet（了解）
+
+!image.png
+
+寻找类方法的流程
+
+!image.png
