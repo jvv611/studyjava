@@ -1,0 +1,75 @@
+!a7c6d78ebcbcbcd16d7ae92e1e4ed3d2.png
+
+!55684411e83c69a7daf3371ef960ed1a.png
+
+`import java.sql.*;import static java.lang.Class.*forName*;public class JDBC {    public static void main(String[] args) throws Exception {        //注册驱动        Class.*forName*("com.mysql.cj.jdbc.Driver");        //获取链接对象`        
+
+`String url = "jdbc:mysql://localhost:3306/stu?useSSL=false";        String username = "root";        String password = "123456";`        
+
+`Connection conn = DriverManager.*getConnection*(url,username,password);        //定义sql        String sql = "update acount set money = 2000 where id = 1";        //获取执行sql对象        Statement stmt=conn.createStatement();        //执行sql        int count = stmt.executeUpdate(sql);//受影响行数        //处理结果        System.*out*.print(count);        //释放资源        stmt.close();        conn.close();    }}`
+
+## API
+
+1.DriverMnager: 作用为注册驱动以及获取数据库连接
+
+!7a127f47adff68ac2b5ae6183bfa64ed.png
+
+!33b0f6518dc25a441d4912c7e6185001.png
+
+2.connection
+
+!QQ_1747051054462.png
+
+!QQ_1747051122995.png
+
+!QQ_1747051377296.png
+
+3.statment
+
+!QQ_1747051412846.png
+
+4.resultset
+
+!QQ_1747052645360.png
+
+游标行从表头开始
+
+!QQ_1747052960606.png
+
+5.preparedstatement
+
+!40f96592d15959dcd675a9050afc4b25.png
+
+通过输入改变导入的sql句子，实现操作
+
+!image.png
+
+!image.png
+
+!QQ_1747140521285.png
+
+## 数据库池
+
+!QQ_1747219398993.png
+
+!QQ_1747219510798.png
+
+!QQ_1747549506821.png
+
+!image.png
+
+数据库连接池演示
+
+!image.png
+
+## 测试
+
+!image.png
+
+!image.png
+
+!image.png
+
+!image.png
+
+!image.png
