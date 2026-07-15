@@ -1,0 +1,201 @@
+## Redis概述
+
+是一个高性能的非关系型数据库
+
+!image.png
+
+关系型数据库和非关系型数据库互补，一般使用关系型数据库存储，非关系型数据库存储关系型数据库的备份
+
+## 安装Redis
+
+将来需要安装在虚拟机上，学习的时候为了方便可以在windows上使用
+
+!image.png
+
+## redis的存储结构
+
+有五种数据结构
+
+!image.png
+
+set不允许重复元素，sortedset是有顺序的set集合
+
+## 命令操作
+
+可以去官网看有哪些操作
+
+### string类型
+
+!image.png
+
+### hash类型
+
+hegetall key获取所有fuled和value的值
+
+!image.png
+
+### list类型
+
+list是有序的，按照插入顺序排序，允许重复
+
+这是双端队列可以从两头加入和获取删除元素
+
+!image.png
+
+### set类型
+
+获取有些不同，是smembers key获取元素，添加为add，删除为remove的前缀
+
+!image.png
+
+### soertedset类型
+
+不仅存储需要的元素，还需要存储一个double类型的分数，用来对存储的元素排序，按照大小顺序排，默认为从小到大
+
+!image.png
+
+## 通用的重用命令
+
+key *获取所有的key
+
+type key获取key的对应value的类型
+
+del key删除指定的key value
+
+## 持久化
+
+### RDB持久化
+
+操作命令的时候关闭了会消失，需要持久化保存到硬盘中去
+
+redis采用如下的持久化方法来存储数据
+
+常常使用方法1，对性能影响小
+
+!image.png
+
+!image.png
+
+可以更改持久化的时间和次数
+
+此时为了开启持久化需要用命令行方式启动redis，其中需要指定redis配置文件名
+
+!image.png
+
+操作了满足条件的key变化后，会创建一个rdb文件来持久化
+
+!image.png
+
+### AOF持久化
+
+默认是关闭的需要在文件中更改为yes来开启aof持久化功能
+
+!image.png
+
+需要更改一些配置
+
+!image.png
+
+第一个为每一次操作都持久化
+
+第二个为每隔一秒持久化一次
+
+第三个为不持久化
+
+会有aof持久化为文件
+
+!image.png
+
+这种方式对性能影响大
+
+!image.png
+
+## Jedis
+
+## 入门
+
+java操作redis的工具，使用工具的接口即可
+
+!image.png
+
+操作方法为链接数据库，操作，关闭链接即可
+
+!image.png
+
+!image.png
+
+### Jedis操作String数据结构
+
+类似于命令行的操作方法
+
+!image.png
+
+### 操作hash类型
+
+!image.png
+
+可以遍历返回的集合元素
+
+!image.png
+
+### 操作list类型
+
+传递的终止值为-1那么获取所有
+
+!image.png
+
+!image.png
+
+### set和sortedset操作
+
+set操作
+
+!image.png
+
+sortedset操作
+
+!image.png
+
+!image.png
+
+## 连接池
+
+jedis自带有连接池，直接使用自带的即可
+
+!image.png
+
+### 获取和使用连接池方法
+
+JedisPool有默认参数可以直接使用
+
+使用getResource获取连接
+
+!image.png
+
+可以使用JedisPoolConfig来配置连接池配置
+
+需要修改为如下
+
+!image.png
+
+有如下的配置信息
+
+!image.png
+
+## 连接池工具类抽取
+
+放在工具包中，提供连接方法
+
+!image.png
+
+定义返回连接池线程的方法
+
+1.写入连接池配置文件
+
+!image.png
+
+2.读取文件，并且加载
+
+!image.png
+
+!image.png
