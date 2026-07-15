@@ -1,0 +1,337 @@
+快速生成servelet
+
+!image.png
+
+自动重写doget和dopost
+
+!image.png
+
+## Request & Response
+
+Request获取请求数据 Response设置响应数据
+
+!image.png
+
+### Request
+
+request继承体系
+
+!image.png
+
+需要使用HttpServeletRequest的方法编程
+
+## Request
+
+请求行获取
+
+!image.png
+
+具体请求方式get方式如下
+
+```java
+@WebServlet("/req02")
+public class Demo01Servlet extends HttpServlet {
+    // 请求行数据:   GET /day24_request_response_war_exploded/req02?username=zhangsan&password=123&hobby=1&hobby=2 HTTP/1.1
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        System.out.println("request = " + request); // Tomcat会创建HttpServletRequest的实现类,并且会保存好请求的数据
+
+        // String getMethod()：获取请求方式
+        System.out.println("请求方式: " + request.getMethod()); // GET
+
+        // String getContextPath()：获取项目访问路径
+        System.out.println("项目访问路径: " + request.getContextPath()); // /day24_request_response_war_exploded
+
+        // String getRequestURI()：获取请求资源的URI
+        System.out.println("RequestURI: " + request.getRequestURI()); // /day24_request_response_war_exploded/req02
+
+        // StringBuffer getRequestURL(): 获取请求的URL
+        System.out.println("请求的URL: " + request.getRequestURL()); // http://localhost:8080/day24_request_response_war_exploded/req02
+
+        // String getQueryString()：获取请求参数
+        System.out.println("请求参数: " + request.getQueryString()); // username=zhangsan&password=123&hobby=1&hobby=2
+
+        // String getHeader(String name)：根据请求头的名字获取请求头的值
+        // 获取请求头：user-agent: 浏览器的版本信息
+        String header = request.getHeader("User-Agent");
+        System.out.println("header = " + header);
+    }
+```
+
+获取请求头
+
+!image.png
+
+// String getHeader(String name)：根据请求头的名字获取请求头的值
+        // 获取请求头：user-agent: 浏览器的版本信息
+        String header = request.getHeader("User-Agent");
+        System.out.println("header = " + header);
+
+请求体获取
+
+!image.png
+
+```java
+protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // 获取POST的请求体
+        BufferedReader reader = request.getReader();
+        String line = reader.readLine();
+        System.out.println("line = " + line); // username=zhangsan&password=123&hobby=1&hobby=2
+    }
+```
+
+### 通用获取数据方式
+
+!image.png
+
+!image.png
+
+post方式在获取中文数据时候可能会乱码
+
+所以需要request.setCharacterEncoding(”UTF-8”)在获取之前指定编码方式
+
+### 请求转发
+
+!image.png
+
+!image.png
+
+一次的请求响应可以共享数据，多次的之间不能数据共享，请求转发不能转发到服务器外部
+
+!image.png
+
+## Response
+
+!image.png
+
+### 设置响应数据功能介绍
+
+!image.png
+
+### 重定向
+
+是一种资源跳转方式
+
+!image.png
+
+推荐使用第二种方式实现重定向资源
+
+1.重定向可以访问外部资源
+
+2.不可以实现request域的资源共享
+
+!image.png
+
+### 响应字符数据
+
+!image.png
+
+### 响应字节输出流
+
+先要有输入流才能输出
+
+例如FileInoutStream输入，注意关闭输入流
+
+!image.png
+
+使用common.io的ioutils方法可以省略自己去读取字节数组的操作来进行复制
+
+如下
+
+```xml
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+        </dependency>
+```
+
+```java
+@WebServlet("/demo09")
+public class Demo09Servlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // 得到字节输出流, 把字节数据响应给浏览器
+        ServletOutputStream out = response.getOutputStream();
+
+        // FileInputStream fis = new FileInputStream("D:\\code\\IdeaProjects\\JavaUp179\\day24-request-response\\src\\main\\webapp\\imgs\\Desert.jpg");
+        // 现在是Web项目,我们写好的代码是放到Tomcat中运行,这个相对路径不不对了
+        // FileInputStream fis = new FileInputStream("day24-request-response\\src\\main\\webapp\\imgs\\Desert.jpg");
+
+        // 我们要找到资源在Tomcat中真实路径
+        String realPath = getServletContext().getRealPath("imgs\\Desert.jpg");
+        System.out.println("realPath = " + realPath);
+        FileInputStream fis = new FileInputStream(realPath);
+
+        // 从文件中读取字节数据,写给浏览器
+        /*byte[] buf = new byte[1024 * 8]; // 用于保存读取的数据
+        int len; // 用于保存读取的数量
+        while ((len = fis.read(buf)) != -1) {
+            out.write(buf, 0, len);
+        }*/
+
+        // Commons-IO的功能
+        IOUtils.copy(fis, out);
+
+        fis.close();
+    }
+```
+
+## 用户登录与注册
+
+### 环境准备
+
+!image.png
+
+### 登录
+
+!image.png
+
+代码如下
+
+servelet层
+
+```java
+package com.itheima.web;
+
+import com.itheima.mapper.UserMapper;
+import com.itheima.pojo.User;
+import com.itheima.util.MyBatisUtils;
+import org.apache.ibatis.session.SqlSession;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+@WebServlet("/loginServlet")
+public class LoginServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // 0.解决POST请求中文乱码
+        request.setCharacterEncoding("UTF-8");
+
+        // 1.获取请求参数(用户名和密码)
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        // 2.调用UserMapper查询用户
+        SqlSession sqlSession = MyBatisUtils.openSqlSession();
+        UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+        User user = mapper.select(username, password);
+
+        // 解决响应中文乱码
+        response.setContentType("text/html;charset=utf-8");
+        PrintWriter writer = response.getWriter();
+        // 3.判断返回的User是否为null
+        if (user == null) {
+            // 3.1.如果返回值为null,登录失败
+            writer.write("登录失败!");
+        } else {
+            // 3.2.如果返回值不为null,登录成功
+            writer.write("登录成功: " + username);
+        }
+        sqlSession.close();
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doGet(request, response);
+    }
+}
+```
+
+再去写具体的mapper层的select代码，这里较为简单直接注解开发即可
+
+```java
+    @Select("SELECT * FROM tb_user WHERE username=#{username} AND password=#{password};")
+    User select(@Param("username") String username, @Param("password") String password);
+```
+
+### 注册
+
+!image.png
+
+具体的servelet代码如下
+
+```java
+package com.itheima.web;
+
+import com.itheima.mapper.UserMapper;
+import com.itheima.pojo.User;
+import com.itheima.util.MyBatisUtils;
+import org.apache.ibatis.session.SqlSession;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+@WebServlet("/registerServlet")
+public class RegisterServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // 0.解决POST请求中文乱码
+        request.setCharacterEncoding("UTF-8");
+        // 1.获取请求参数(账号密码)
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        // 2.调用UserMapper,根据用户名查询用户是否存在
+        SqlSession sqlSession = MyBatisUtils.openSqlSession();
+        UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+        User user = mapper.selectByUsername(username);
+
+        response.setContentType("text/html;charset=utf-8");
+        PrintWriter writer = response.getWriter();
+
+        // 3.判断返回的User是否为null
+        if (user == null) {
+            // 3.1.如果user为null,用户名不存在,可以注册
+            User addUser = new User();
+            addUser.setUsername(username);
+            addUser.setPassword(password);
+            // 添加用户到数据库,完成注册
+            mapper.add(addUser);
+            sqlSession.commit();
+            writer.write("恭喜您, 注册成功!");
+        } else {
+            // 3.2.如果user不为null,用户名存在
+            writer.write("用户名存在, 请重新注册!");
+        }
+        sqlSession.close();
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doGet(request, response);
+    }
+}
+```
+
+mapper代码
+
+```java
+package com.itheima.mapper;
+
+import com.itheima.pojo.User;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+// 这个接口中的方法都是操作tb_user表
+public interface UserMapper {
+    // 根据用户名和密码查询用户
+    @Select("SELECT * FROM tb_user WHERE username=#{username} AND password=#{password};")
+    User select(@Param("username") String username, @Param("password") String password);
+
+    // 根据用户名查询用户
+    @Select("SELECT * FROM tb_user WHERE username=#{username};")
+    User selectByUsername(String username);
+
+    // 添加用户
+    @Insert("INSERT INTO tb_user VALUES (NULL, #{username}, #{password});")
+    void add(User user);
+    //或是 void add(@Param("username")String username.@Param("password")String password)
+}
+```
