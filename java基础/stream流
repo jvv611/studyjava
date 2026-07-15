@@ -1,0 +1,487 @@
+
+Stream流
+在这里插入代码片class Seat3 implements Runnable{
+private int position = 100;
+@Override
+public void run() {
+    while (true){
+        getPosition();
+    }
+}
+
+//默认同步监视器：this
+private synchronized void getPosition(){
+    if(position > 0){
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("从"+Thread.currentThread().getName() + "得到座位，座位号为：" + position);
+        --position;
+    }
+}
+
+​
+}
+public class SeatTest3 {
+public static void main(String[] args) {
+Seat3 seat3 = new Seat3();
+    Thread thread0 = new Thread(seat3);
+    Thread thread1 = new Thread(seat3);
+    Thread thread2 = new Thread(seat3);
+
+    thread0.setName("渠道一");
+    thread1.setName("渠道二");
+    thread2.setName("渠道三");
+
+    thread0.start();
+    thread1.start();
+    thread2.start();
+}
+
+​
+}
+【Java 基础篇】Java Stream 流详解 - 繁依Fanyi - 博客园
+流是一系列元素的序列，它可以在一次遍历的过程中逐个处理这些元素。在Java中，流是对数据的抽象，可以操作各种不同类型的数据源，如集合、数组、文件等。
+//创建流
+在使用Java Stream流之前，首先需要创建一个流。流可以从各种数据源中创建，包括集合、数组、文件等
+数组无法直接调用 stream() 方法。Java 提供了 Arrays 工具类的静态方法 stream()，专门用于将数组转换为对应的流（如 IntStream、LongStream 等基本类型流，或 Stream<T> 对象流）。
+
+names 是一个集合（List<String>），而所有集合类（实现了 Collection 接口的类）都继承了 Collection 接口中定义的 stream() 方法（Java 8 新增）。无需借助stream（）方法
+//执行操作，流有两种操作中间操作以及终端操作
+中间操作是对流的一系列处理步骤，这些步骤会返回一个新的流，允许链式调用。中间操作通常用于对数据进行过滤、映射、排序等操作。一些常见的中间操作包括：
+filter(Predicate<T> predicate)：根据条件过滤元素。
+map(Function<T, R> mapper)：将元素映射为新的值。
+sorted()：对元素进行排序。
+distinct()：去重，去除重复的元素。
+limit(long maxSize)：限制流中元素的数量。
+skip(long n)：跳过流中的前n个元素。
+//
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+List<Integer> result = numbers.stream()
+.filter(n -> n % 2 == 0) // 过滤偶数
+.map(n -> n * 2)         // 映射为原来的2倍
+.sorted()                // 排序
+.collect(Collectors.toList()); // 收集结果
+终端操作是流的最后一步操作，它会触发对流的计算并产生一个最终的结果。终端操作通常包括：
+forEach(Consumer<T> action)：对流中的每个元素执行操作。
+collect(Collector<T, A, R> collector)：将流中的元素收集到一个容器中。
+toArray()：将流中的元素收集到数组中。
+reduce(identity, accumulator)：对流中的元素进行归约操作，返回一个值。
+count()：返回流中元素的数量。
+min(comparator)：返回流中的最小元素。
+max(comparator)：返回流中的最大元素。
+allMatch(predicate)：检查流中的所有元素是否都满足条件。
+anyMatch(predicate)：检查流中是否存在满足条件的元素。
+noneMatch(predicate)：检查流中是否没有元素满足条件。
+findFirst()：返回流中的第一个元素。
+findAny()：返回流中的任意一个元素。
+终端操作是流的最后一步，一旦调用终端操作，流将被消耗，不能再被复用。
+class Student {
+private String name;
+private int age;
+private double score;
+public Student(String name, int age, double score) {
+    this.name = name;
+    this.age = age;
+    this.score = score;
+}
+
+public String getName() {
+    return name;
+}
+
+public int getAge() {
+    return age;
+}
+
+public double getScore() {
+    return score;
+}
+
+@Override
+public String toString() {
+    return "Student{" +
+            "name='" + name + '\\'' +
+            ", age=" + age +
+            ", score=" + score +
+            '}';
+}
+
+​
+}
+public class Main {
+public static void main(String[] args) {
+List<Student> students = Arrays.asList(
+new Student("Alice", 20, 90.0),
+new Student("Bob", 22, 85.5),
+new Student("Charlie", 19, 88.5),
+new Student("David", 21, 92.0),
+new Student("Eva", 18, 94.5)
+);
+    List<Student> result = students.stream()
+        .filter(student -> student.getAge() > 18 && student.getScore() >= 90.0)
+        .collect(Collectors.toList());
+
+    result.forEach(System.out::println);
+}
+
+​
+}
+并行流
+Java Stream还提供了并行流的支持，可以充分利用多核处理器的性能。只需将普通流转换为并行流，即可实现并行化处理。
+List<Student> result = students.parallelStream()
+    .filter(student -> student.getAge() > 18 && student.getScore() >= 90.0)
+    .collect(Collectors.toList());
+​
+存在线程安全问题
+在使用Java Stream流时，有一些注意事项需要考虑，以确保代码的正确性和性能。以下是一些常见的注意事项：
+不可重用性： 一旦创建了一个Stream对象并执行了终端操作，该Stream就不能再被重用。如果需要对同一数据集进行多次处理，应该每次都创建新的Stream对象。
+惰性求值： Stream是惰性求值的，中间操作只会在终端操作触发后才会执行。这意味着中间操作不会立即产生结果，而是在需要结果时才进行计算。这可以帮助节省计算资源，但也需要谨慎处理，以免产生意外的行为。
+并行流的线程安全性： 如果使用并行流（parallelStream()），要确保Stream操作是线程安全的。一些操作可能会引发并发问题，需要适当的同步或避免使用并行流。
+流的关闭： 如果你使用的是基于IO的流（如Files.lines()），需要确保在使用完后关闭流，以释放资源。
+性能注意事项： Stream操作的性能可能会受到数据量的影响。在大数据集上使用Stream时，要注意性能问题，可以考虑使用并行流或其他优化方法。
+空值处理： 在使用Stream时，要注意空值（null）的处理，避免空指针异常。可以使用filter、map等操作来过滤或转换空值。
+有状态操作： 一些Stream操作是有状态的，例如sorted和distinct，它们可能需要缓存所有元素，因此在处理大数据集时要谨慎使用，以免导致内存溢出。
+自定义收集器： 如果需要自定义收集器（Collector），要确保它的线程安全性和正确性，以便在Stream中使用。
+不可变性： 推荐使用不可变对象和不可变集合来处理Stream，以避免并发问题。
+了解Stream操作的复杂度： 不同的Stream操作具有不同的时间复杂度。了解操作的复杂度有助于选择最适合的操作来满足性能需求。
+异常处理
+Java异常详解及处理机制（超详细附习题）_java异常教程-CSDN博客
+Throwable类是 Java 语言中所有错误或异常的超类。Throwable： 有两个重要的子类：Exception（异常）和 Error（错误），二者都是 Java 异常处理的重要子类，各自都包含大量子类。
+Error是Throwable的子类，用于指示合理的应用程序不应该试图捕获的严重问题，是程序无法处理的错误。例如：VirtualMachineError （虚拟机错误），包含OutOfMemoryError（堆内存溢出）, StackOverflowError（栈内存溢出错误）。
+ 对于Exception来说，咱们程序员的态度应该是：（1）能通过条件判断等代码避免的，就不要用try-catch（2）无法避免的用try-catch处理。
+在Java应用程序中，异常处理机制为：抛出异常，捕获异常。
+try{
+尝试执行xx代码，它们可能发生异常，也可能不发生异常
+}catch(异常的类型 异常参数名){ //通常参数名都是e
+对异常的处理代码
+以及 打印异常信息的代码（目前我们把异常打印到控制台，后期做项目异常信息打印到日志文件），错误信息怎么打印是根据实际情况来定
+}
+try{
+尝试执行xx代码，它们可能发生异常，也可能不发生异常
+}catch(异常的类型1 异常参数名){ //通常参数名都是e
+异常的处理代码
+}catch(异常的类型2 异常参数名){ //通常参数名都是e
+异常处理代码
+}finally{
+无论try中是不是发生异常，
+也不管catch能不能抓住异常，
+就算是try和catch中有return语句，
+都必须执行的代码，放这里
+}
+finally会在try中return结束方法前执行。
+public static void main(String[] args) throws InterruptedException{}
+//说明一下代码可能会抛出问题
+
+自定义异常
+使用Java内置的异常类可以描述在编程时出现的大部分异常情况。除此之外，用户还可以自定义异常。用户自定义异常类，只需继承Exception类即可。
+
+多线程
+1.Thread类
+Java虚拟机允许程序运行多个线程，它通过java.lang.Thread 类来体现。
+每个线程都是通过某个特定Thread对象的run()方法来完成操作的，经常把run()方法的主体称为线程体。
+通过该Thread对象的start()方法来启动这个线程，而非直接调用run()。
+Thread类的构造器：
+Thread():创建新的Thread对象
+Thread(String threadName):创建线程并指定线程实例名
+Thread(Runnable target):指定创建线程的目标对象，它实现了Runnable接口中的run方法
+Thread(Runnable target, String name):创建新的Thread对象
+可以通过继承Thread类方式或者实现Runnable接口方式创建多线程
+2.1 继承Thread类的方式
+步骤为以下4步骤：
+创建一个继承于Thread类的子类
+该子类重写Thread父类的run() 方法，将线程执行的操作声明在run()中
+创建该子类的对象
+通过该子类对象调用start()
+/**
+@Author: YuShiwen
+@Date: 2020/11/23 1:53 PM
+@Version: 1.0
+*/
+//1. 创建一个继承于Thread类的子类
+class MyThread extends Thread{
+//2. 该子类重写Thread父类的run() 方法，将线程执行的操作声明在run()中
+// 这里我以输出100以内的质数为例
+@Override
+public void run() {
+    label:for (int i = 2; i < 100; i++) {
+        for(int j = 2; j < Math.sqrt(i);j++){
+            if(i % j == 0){
+                continue label;
+            }
+        }
+        System.out.println(Thread.currentThread().getName()+":质数"+i);
+    }
+}
+
+​
+}
+public class ThreadTestByInherit {
+public static void main(String[] args) {
+    //3. 创建该子类的对象
+    MyThread myThread = new MyThread();
+
+    //4. 通过该子类对象调用start()
+    myThread.start();
+
+    //如果直接调用run(),是main线程，没有达到多线程的目的
+    //myThread.run();
+
+    //主线程输出
+    System.out.println(Thread.currentThread().getName()+"：我是主线程");
+
+
+}
+
+​
+}
+
+• 如果自己手动调用run()方法，那么就只是普通方法，没有启动多线程模式。
+• 想要启动多线程，必须调用start方法。
+2.2 实现Runnable接口
+步骤为以下5个步骤：
+创建一个实现了Runnable接口的类
+实现类去实现Runnable中的抽象方法：run()
+创建实现类的对象
+将此对象作为参数传递到Thread类的构造器中，创建Thread类的对象
+通过Thread类的对象调用start()
+//1. 创建一个实现了Runnable接口的类
+class MThread implements Runnable{
+//2. 实现类去实现Runnable中的抽象方法：run()
+@Override
+public void run() {
+label:for (int i = 2; i < 100; i++) {
+for(int j = 2; j < Math.sqrt(i);j++){
+if(i % j == 0){
+continue label;
+}
+}
+System.out.println(Thread.currentThread().getName()+":质数"+i);
+}
+}
+}
+public class ThreadTestByRunnable {
+public static void main(String[] args) {
+//3. 创建实现类的对象
+MThread mThread = new MThread();
+//4. 将此对象作为参数传递到Thread类的构造器中，创建Thread类的对象
+Thread thread = new Thread(mThread);
+//5. 通过Thread类的对象调用start()
+thread.start();
+}
+}
+
+• 两种方式都需要重写run(),将线程要执行的逻辑声明在run()中。
+2.3 实现Callable接口(JDK 5.0新增)
+与使用Runnable相比， Callable功能更强大些
+相比run()方法，可以有返回值
+方法可以抛出异常
+支持泛型的返回值
+需要借助FutureTask类，比如获取返回结果
+Future接口
+可以对具体Runnable、Callable任务的执行结果进行取消、查询是 否完成、获取结果等。
+FutrueTask是Futrue接口的唯一的实现类
+FutureTask 同时实现了Runnable, Future接口。它既可以作为Runnable被线程执行，又可以作为Future得到Callable的返回值
+
+//1.创建一个实现Callable的实现类
+class NumThread implements Callable {
+//2.实现call方法，将此线程需要执行的操作声明在call()中
+@Override
+public Object call() throws Exception {
+int sum = 0;
+for (int i = 1; i <= 100; i++) {
+if(i % 2 == 0){
+System.out.println(i);
+sum += i;
+}
+}
+return sum;
+}
+}
+public class ThreadNew {
+public static void main(String[] args) {
+//3.创建Callable接口实现类的对象
+NumThread numThread = new NumThread();
+//4.将此Callable接口实现类的对象作为传递到FutureTask构造器中，创建FutureTask的对象
+FutureTask futureTask = new FutureTask(numThread);
+//5.将FutureTask的对象作为参数传递到Thread类的构造器中，创建Thread对象，并调用start()
+new Thread(futureTask).start();
+    try {
+        //6.获取Callable中call方法的返回值
+        //get()返回值即为FutureTask构造器参数Callable实现类重写的call()的返回值。
+        Object sum = futureTask.get();
+        System.out.println("总和为：" + sum);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    } catch (ExecutionException e) {
+        e.printStackTrace();
+    }
+}
+
+​
+}
+2.4 使用线程池
+经常创建和销毁、使用量特别大的资源，比如并发情况下的线程， 对性能影响很大。提前创建好多个线程，放入线程池中，使用时直接获取，使用完放回池中。可以避免频繁创建销毁、实现重复利用。
+提高响应速度（减少了创建新线程的时间）
+降低资源消耗（重复利用线程池中线程，不需要每次都创建）
+便于线程管理
+corePoolSize：核心池的大小
+maximumPoolSize：最大线程数
+keepAliveTime：线程没有任务时最多保持多长时间后会终止
+
+class NumberThread implements Runnable{
+@Override
+public void run() {
+    for(int i = 0;i <= 100;i++){
+        if(i % 2 == 0){
+            System.out.println(Thread.currentThread().getName() + ": " + i);
+        }
+    }
+}
+
+​
+}
+class NumberThread1 implements Runnable{
+@Override
+public void run() {
+    for(int i = 0;i <= 100;i++){
+        if(i % 2 != 0){
+            System.out.println(Thread.currentThread().getName() + ": " + i);
+        }
+    }
+}
+
+​
+}
+public class ThreadPoolTest {
+public static void main(String[] args) {
+    //1. 提供指定线程数量的线程池
+    ExecutorService service = Executors.newFixedThreadPool(10);
+    ThreadPoolExecutor service1 = (ThreadPoolExecutor) service;
+    //设置线程池的属性
+
+​
+//        System.out.println(service.getClass());
+//        service1.setCorePoolSize(15);
+//        service1.setKeepAliveTime();
+    //2.执行指定的线程的操作。需要提供实现Runnable接口或Callable接口实现类的对象
+    service.execute(new NumberThread());//适合适用于Runnable
+    service.execute(new NumberThread1());//适合适用于Runnable
+
+​
+//        service.submit(Callable callable);//适合使用于Callable
+//3.关闭连接池
+service.shutdown();
+}
+}
+start():启动当前线程；调用当前线程的run()方法
+run(): 通常需要重写Thread类中的此方法，将创建的线程要执行的操作声明在此方法中
+currentThread():静态方法，返回执行当前代码的线程
+getName():获取当前线程的名字
+setName():设置当前线程的名字
+yield():暂停当前正在执行的线程，把执行机会让给优先级相同或更高的线程，若没有，继续执行当前线程。
+join():在线程a中调用线程b的join(),此时线程a就进入阻塞状态，直到线程b完全执行完以后，线程a才结束阻塞状态。
+stop():已过时。当执行此方法时，强制结束当前线程，不推荐使用。
+sleep(long millitime):让当前线程“睡眠”指定的millitime毫秒。在指定的millitime毫秒时间内，当前线程是阻塞状态。
+isAlive():判断当前线程是否存活
+
+synchronized还可以放在方法声明中，表示整个方法为同步方法。
+例如:
+public synchronized void show (String name){ …
+}
+synchronized 与 Lock 的对比
+Lock是显式锁(手动开启和关闭锁，别忘记关闭锁)，synchronized是隐式锁，出了作用域自动释放
+Lock只有代码块锁，synchronized有代码块锁和方法锁
+使用Lock锁，JVM将花费较少的时间来调度线程，性能更好。并且具有更好的扩展性(提供更多的子类)
+
+
+反射
+Java 反射机制详解 | JavaGuide
+像咱们平时大部分时候都是在写业务代码，很少会接触到直接使用反射机制的场景。
+但是，这并不代表反射没有用。相反，正是因为反射，你才能这么轻松地使用各种框架。像 Spring/Spring Boot、MyBatis 等等框架中都大量使用了反射机制。
+这些框架中也大量使用了动态代理，而动态代理的实现也依赖反射。
+优点：可以让咱们的代码更加灵活、为各种框架提供开箱即用的功能提供了便利
+缺点：让我们在运行时有了分析操作类的能力，这同样也增加了安全问题。比如可以无视泛型参数的安全检查（泛型参数的安全检查发生在编译时）。另外，反射的性能也要稍差点，不过，对于框架来说实际是影响不大的。相关阅读
+//获取反射方式
+如果我们动态获取到这些信息，我们需要依靠 Class 对象。Class 类对象将一个类的方法、变量等信息告诉运行的程序。Java 提供了四种方式获取 Class 对象:
+1. 知道具体类的情况下可以使用：
+Class alunbarClass = TargetObject.class;
+​
+但是我们一般是不知道具体类的，基本都是通过遍历包下面的类来获取 Class 对象，通过此方式获取 Class 对象不会进行初始化
+2. 通过 Class.forName()传入类的全路径获取：
+Class alunbarClass1 = Class.forName("cn.javaguide.TargetObject");
+​
+3. 通过对象实例instance.getClass()获取：
+TargetObject o = new TargetObject();Class alunbarClass2 = o.getClass();
+​
+4. 通过类加载器xxxClassLoader.loadClass()传入类路径获取:
+ClassLoader.getSystemClassLoader().loadClass("cn.javaguide.TargetObject");
+​
+通过类加载器获取 Class 对象不会进行初始化，意味着不进行包括初始化等一系列步骤，静态代码块和静态对象不会得到执行
+package cn.javaguide;
+public class TargetObject {
+private String value;
+public TargetObject() {
+    value = "JavaGuide";
+}
+
+public void publicMethod(String s) {
+    System.out.println("I love " + s);
+}
+
+private void privateMethod() {
+    System.out.println("value is " + value);
+}
+
+​
+}
+package cn.javaguide;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+public class Main {
+public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchFieldException {
+/**
+* 获取 TargetObject 类的 Class 对象并且创建 TargetObject 类实例
+/
+Class<?> targetClass = Class.forName("cn.javaguide.TargetObject");
+TargetObject targetObject = (TargetObject) targetClass.newInstance();
+/*
+* 获取 TargetObject 类中定义的所有方法
+*/
+Method[] methods = targetClass.getDeclaredMethods();
+for (Method method : methods) {
+System.out.println(method.getName());
+}
+    /**
+     * 获取指定方法并调用
+     */
+    Method publicMethod = targetClass.getDeclaredMethod("publicMethod",
+            String.class);
+
+    publicMethod.invoke(targetObject, "JavaGuide");
+
+    /**
+     * 获取指定参数并对参数进行修改
+     */
+    Field field = targetClass.getDeclaredField("value");
+    //为了对类中的参数进行修改我们取消安全检查
+    field.setAccessible(true);
+    field.set(targetObject, "JavaGuide");
+
+    /**
+     * 调用 private 方法
+     */
+    Method privateMethod = targetClass.getDeclaredMethod("privateMethod");
+    //为了调用private方法我们取消安全检查
+    privateMethod.setAccessible(true);
+    privateMethod.invoke(targetObject);
+}
+
+​
+}
+可以调用方法，属性以及修改private参数
+Notion 新版本现已上线！(7.9.0 → 7.26.0) 你想现在安装吗？我们将为你重新打开窗口和选项卡。
