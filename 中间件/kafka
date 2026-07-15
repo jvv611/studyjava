@@ -1,0 +1,1354 @@
+# Kafka 教程
+
+- Kafka 简介
+    
+    **Apache Kafka**起源于LinkedIn，后来在2011年成为开源Apache项目，然后在2012年成为First-class Apache项目。Kafka用Scala和Java编写。Apache Kafka是基于发布-订阅的容错消息传递系统。它是快速，可扩展的，并且可以按设计进行分发。本教程将探讨Kafka的原理，安装，操作，然后逐步引导您完成Kafka集群的部署。最后，我们将通过实时应用和与大数据技术的集成来结束。
+    
+    与RabbitMQ不同
+    
+- 应用描述
+    
+    在大数据中，使用了大量的数据。关于数据，我们面临两个主要挑战。第一个挑战是如何收集大量数据，第二个挑战是分析收集的数据。为了克服这些挑战，您必须需要一个消息传递系统。Kafka专为分布式高吞吐量系统而设计。Kafka可以很好地替代传统的消息代理。与其他消息系统相比，Kafka具有更好的吞吐量，内置的分区，复制和固有的容错能力，使其非常适合大型邮件处理应用程序。
+    
+- 什么是消息系统？
+    
+    消息系统负责将数据从一个应用程序传输到另一个应用程序，因此应用程序可以专注于数据，而不必担心如何共享数据。分布式消息传递基于可靠消息队列的概念。消息在客户端应用程序和消息传递系统之间异步排队。可用的消息传递模式有两种：一种是点对点的，另一种是发布-订阅（pub-sub）的消息传递系统。大多数消息传递模式遵循pub-sub。
+    
+    **点对点消息系统:**
+    
+    在点对点系统中，消息将保留在队列中。一个或多个使用者可以使用队列中的消息，但是特定消息最多只能由一个使用者使用。使用者读取队列中的消息后，该消息将从该队列中消失。该系统的典型示例是订单处理系统，其中每个订单将由一个订单处理器处理，但是多个订单处理器可以同时工作。下图描述了该结构。
+    
+    ![](https://www.cainiaoya.com/images/kafka/jiaocheng1.png)
+    
+    **发布-订阅消息系统:**
+    
+    在发布-订阅系统中，消息保留在主题中。与点对点系统不同，消费者可以订阅一个或多个主题，并消费该主题中的所有消息。在发布-订阅系统中，消息生产者称为发布者，消息消费者称为订阅者。一个真实的例子是Dish TV，它发布了体育，电影，音乐等不同的频道，任何人都可以订阅自己的频道集，并在订阅频道可用时获取它们。
+    
+    ![](https://www.cainiaoya.com/images/kafka/jiaocheng2.png)
+    
+- 什么是 Kafka
+    
+    Apache Kafka是一个分布式的发布-订阅消息传递系统，并且是一个健壮的队列，可以处理大量数据，并使您能够将消息从一个端点传递到另一个端点。Kafka适用于离线和在线消息消费。Kafka消息将保留在磁盘上，并在群集内复制以防止数据丢失。Kafka建立在ZooKeeper同步服务之上。它与Apache Storm和Spark集成得很好，可以进行实时流数据分析。
+    
+    **好处**- 以下是Kafka的一些好处
+    
+    - **可靠性** - Kafka是分布式，分区，复制和容错的。
+    - **可扩展性** - Kafka消息传递系统可轻松扩展，而无需停机。
+    - **持久性** - Kafka使用分布式提交日志，这意味着消息会尽可能快地在磁盘上保留，因此是持久的。
+    - **性能** - Kafka具有高吞吐量，可以发布和订阅消息。即使存储了许多TB级别的消息，它也可以保持稳定的性能。
+    
+    Kafka速度非常快，可确保零停机时间和零数据丢失。
+    
+    **用例场景** - Kafka可用于许多用例。其中一些在下面列出
+    
+    - **指标** - Kafka通常用于操作监控数据。这涉及汇总来自分布式应用程序的统计信息，以生成集中的运行数据提要。
+    - **日志聚合解决方案** -Kafka可以在整个组织中使用，以从多种服务中收集日志，并以标准格式将其提供给多个消费者。
+    - **流处理** - 诸如Storm和Spark Streaming之类的流行框架从一个主题读取数据，对其进行处理，并将处理后的数据写入一个新的主题，供用户和应用程序使用。Kafka的坚固耐用性在流处理中也非常有用。
+    
+    **Kafka**的需求
+    
+    Kafka是用于处理所有实时数据馈送的统一平台。Kafka支持低延迟消息传递，并在出现机器故障时保证容错能力。它具有处理大量不同消费者的能力。Kafka速度非常快，每秒执行200万次写入。Kafka将所有数据持久保存到磁盘，这实际上意味着所有写操作都将进入OS（RAM）的页面缓存。这使得将数据从页面缓存传输到网络套接字非常有效。
+    
+- 听众
+    
+    本教程是为渴望使用Apache Kafka消息传递系统从事大数据分析职业的专业人士准备的。它将使您对如何使用Kafka集群有足够的了解。
+    
+- 先决条件
+    
+    在继续本教程之前，您必须对Java，Scala，分布式消息系统和Linux环境有很好的了解。
+    
+    # Kafka 基础知识
+    
+- Kafka 基础知识
+    
+    在深入了解Kafka之前，您必须了解主题（topics），代理（brokers），生产者（producers）和消费者（consumers）等主要术语。下图说明了主要术语，下表详细说明了图的组成部分。
+    
+    ![](https://www.cainiaoya.com/images/kafka/bash1.jpg)
+    
+    在上图中，主题(topics)被配置为三个分区。分区1具有两个偏移因子0和1。分区2具有四个偏移因子0、1、2和3。分区3具有一个偏移因子0。副本的ID与托管它的服务器的ID相同。
+    
+    假设，如果主题(topics)的复制因子设置为3，则Kafka将为每个分区创建3个相同的副本，并将它们放置在群集中以使其可用于其所有操作。为了平衡集群中的负载，每个代理都存储一个或多个这些分区。多个生产者（producers）和消费者（consumers）可以同时发布和检索消息。
+    
+- 组件说明
+    
+    
+    |  | 组件 |
+    | --- | --- |
+    |  | 主题(topics) |
+    |  | 分区 |
+    |  | 分区偏移 |
+    |  | 分区副本 |
+    |  | 代理（brokers） |
+    |  | Kafka集群 |
+    |  | 生产者 |
+    |  | 消费者 |
+    |  | 领导 |
+    |  | 追随者 |
+
+# Kafka 集群架构
+
+- Kafka 集群架构 看一下下图。它显示了Kafka的群集图。。
+    
+    ![](https://www.cainiaoya.com/images/kafka/jiagou1.jpg)
+    
+- 组件说明
+    
+    
+    |  | 组件 |
+    | --- | --- |
+    |  | **Broker** |
+    |  | **ZooKeeper** |
+    |  | **producers** |
+    |  | **consumers** |
+
+# Kafka 工作流程
+
+- Kafka 工作流程 到目前为止，我们讨论了Kafka的核心概念。现在让我们来了解一下Kafka的工作流程。 Kafka只是主题(Topic)的集合，分为一个或多个分区。Kafka分区是消息的线性顺序序列，其中每个消息均由其索引（称为偏移）标识。Kafka群集中的所有数据都是分区的脱节联合。传入消息写入分区的末尾，使用者依次读取消息。通过将消息复制到不同的代理来提供持久性。 Kafka以快速，可靠，持久，容错和零停机的方式提供基于**发布-订阅**和基于**队列**的消息传递系统。在这两种情况下，生产者只需将消息发送到某个主题，消费者就可以根据自己的需要选择任何一种消息传递系统。让我们按照下一部分中的步骤来了解消费者如何选择自己选择的消息传递系统。
+- 发布-订阅消息的工作流程 以下是**发布-订阅**消息的分步工作流程-
+    - 生产者定期向主题发送消息。
+    - Kafka代理将所有消息存储在为特定主题配置的分区中。它确保消息在分区之间平均共享。如果生产者发送了两个消息，并且有两个分区，Kafka将在第一个分区中存储一个消息，在第二个分区中存储第二个消息。
+    - 消费者订阅特定主题。
+    - 消费者订阅主题后，Kafka将向消费者提供该主题的当前偏移量，并将偏移量保存在Zookeeper集合中。
+    - 消费者将定期（例如100 ms）向Kafka请求新消息。
+    - 一旦Kafka从生产者那里收到消息，它将把这些消息转发给消费者。
+    - 消费者将收到消息并进行处理。
+    - 消息处理后，消费者将向Kafka代理发送确认。
+    - 一旦Kafka收到确认，它将偏移量更改为新值并在Zookeeper中对其进行更新。由于在Zookeeper中保留了偏移量，因此即使在服务器出现故障时，使用者也可以正确读取下一条消息。
+    - 以上流程将重复进行，直到消费者停止请求为止。
+    - 消费者可以选择随时倒退/跳至所需的主题偏移量并阅读所有后续消息。
+- 队列消息/使用者组的工作流程 在队列消息传递系统而不是单个使用者中，具有相同组ID的一组使用者将订阅一个主题。简而言之，订阅具有相同组ID的主题的消费者被视为一个组，并且在它们之间共享消息。让我们检查该系统的实际工作流程。
+    - 生产者(Producer)定期发送消息到主题(Topic)。
+    - Kafka将所有消息存储在为特定主题配置的分区中，类似于之前的场景。
+    - 单个消费者(Consumers)订阅特定的主题(Topic)，假设Topic-01的组ID为Group-1。
+    - Kafka以与**发布者-订阅消息**传递相同的方式与消费者交互，直到新的消费者订阅相同的主题Topic-01并具有与Group-1相同的组ID。
+    - 新用户到达后，Kafka将其操作切换为共享模式，并在两个用户之间共享数据。这种共享将一直持续到消费者数量达到为该特定主题配置的分区数量为止。
+    - 一旦使用者数量超过分区数量，新的使用者就不会再收到任何消息，直到任何一个现有的使用者取消订阅为止。之所以出现这种情况，是因为将向Kafka中的每个使用者分配至少一个分区，并且一旦将所有分区分配给现有使用者，新的使用者就必须等待。
+    - 此功能也称为“消费者组”。同样，Kafka将以非常简单和有效的方式提供这两种系统中的最佳功能。
+- ZooKeeper的作用 Apache Kafka的关键依赖项是Apache Zookeeper，它是一种分布式配置和同步服务。Zookeeper充当Kafka代理和消费者之间的协调者。Kafka服务器通过Zookeeper群集共享信息。Kafka将基本元数据存储在Zookeeper中，例如有关主题，代理，消费者补偿（队列读取器）的信息等。 由于所有关键信息都存储在Zookeeper中，并且通常会在其整个集合中复制此数据，因此Kafka代理/ Zookeeper的故障不会影响Kafka集群的状态。Zookeeper重新启动后，Kafka将恢复状态。这使Kafka的停机时间为零。如果代理Leader故障，Kafka代理之间的Leader选举也可以通过Zookeeper进行。 要了解有关Zookeeper的更多信息，请参阅zookeeper教程 在下一章中，让我们继续如何在您的计算机上安装Java，ZooKeeper和Kafka。
+
+# Kafka 安装步骤
+
+- 安装步骤 在安装Kafka之前，请确保您的系统在以下任何操作系统上运行-
+ ZooKeeper服务器是用Java创建的，并且在JVM上运行。您需要使用JDK 6或更高版本。 现在，按照下面给出的步骤在您的计算机上安装ZooKeeper框架。
+    - **任何Linux操作系统** - 支持开发和部署。它是演示应用程序的首选。
+    - **Windows OS** - 仅支持开发。
+    - **Mac OS** - 仅支持开发。
+- 验证JDK是否安装 相信您已经在系统上安装了Java环境。只需使用以下命令进行验证。
+ 如果您的计算机上安装了Java，则可以看到已安装Java的版本。否则，请按照下面给出的简单步骤安装最新版本的Java。 **步骤1.1**：下载JDK 通过访问以下链接下载最新版本的JDK，并下载最新版本。JDK，最新版本（撰写本教程时）为JDK 14.0.1，文件为“jdk-14.0.1-linuxx64.tar.gz”。请在您的计算机上下载文件 **步骤1.2**：解压缩文件 通常，文件会下载到download文件夹中。验证它并使用以下命令提取tar设置。
+**步骤1.3**：移至usr目录 要使Java对所有用户可用，请将提取的Java内容移至“/usr/local/java”文件夹。 **步骤1.4**：设定PATH环境变量 要设置PATH和JAVA_HOME变量，请将以下命令添加到〜/.bashrc文件。
+ 现在，将所有更改应用到当前正在运行的系统中。
+**步骤1.5**：Java替代品 使用以下命令更改Java替代方案。
+**步骤1.6** 使用步骤1中说明的验证命令（`java -version`）验证Java安装。
+    
+    ```bash
+    
+    $ java -version
+    ```
+    
+    ```bash
+    
+    $ cd /go/to/download/path
+    $ tar -zxf jdk-14.0.1-linuxx64.tar.gz
+    ```
+    
+    ```bash
+    
+    export JAVA_HOME = /usr/jdk/jdk-14.0.1
+    export PATH=$PATH:$JAVA_HOME/bin
+    ```
+    
+    ```bash
+    
+    $ source ~/.bashrc
+    ```
+    
+    ```bash
+    
+    update-alternatives --install /usr/bin/java java /opt/jdk/jdk-14.0.1/bin/java 100
+    ```
+    
+- ZooKeeper框架安装**步骤2.1**：下载ZooKeeper 要在您的计算机上安装ZooKeeper框架，请访问以下链接并下载最新版本的ZooKeeper。http://zookeeper.apache.org/releases.html，到目前为止，ZooKeeper的最新版本是3.6.0（ZooKeeper-3.6.0.tar.gz）。 **步骤2.2**：解压缩tar文件 使用以下命令解压缩tar文件-
+**步骤2.3**：创建配置文件
+ 成功保存配置文件后，再次返回到终端。现在，您可以启动Zookeeper服务器。 **步骤2.4**：启动ZooKeeper服务器，执行以下命令-
+ 执行此命令后，您将获得如下响应：
+**步骤2.5**：启动CLI 键入以下命令-
+ 键入上面的命令后，您将连接到ZooKeeper服务器，并且应该得到以下响应。
+ 停止ZooKeeper服务器 连接服务器并执行所有操作后，可以使用以下命令停止Zookeeper服务器。
+    
+    ```bash
+    
+    $ cd opt/
+    $ tar -zxf zookeeper-3.6.0.tar.gz
+    $ cd zookeeper-3.6.0
+    $ mkdir data
+    ```
+    
+    ```bash
+    
+    $ vi conf/zoo.cfg
+    
+    tickTime = 2000
+    dataDir = /path/to/zookeeper/data
+    clientPort = 2181
+    initLimit = 5
+    syncLimit = 2
+    ```
+    
+    ```bash
+    
+    $ bin/zkServer.sh start
+    ```
+    
+    ```bash
+    
+    $ JMX enabled by default
+    $ Using config: /Users/../zookeeper-3.6.0/bin/../conf/zoo.cfg
+    $ Starting zookeeper ... STARTED
+    ```
+    
+    ```bash
+    
+    $ bin/zkCli.sh
+    ```
+    
+    ```bash
+    
+    Connecting to localhost:2181
+    ................
+    ................
+    ................
+    Welcome to ZooKeeper!
+    ................
+    ................
+    WATCHER::
+    WatchedEvent state:SyncConnected type: None path:null
+    [zk: localhost:2181(CONNECTED) 0]
+    ```
+    
+    ```bash
+    
+    $ bin/zkServer.sh stop
+    ```
+    
+- Apache Kafka安装 让我们继续以下步骤在您的计算机上安装Kafka。 **步骤3.1**：下载Kafka 要在您的计算机上安装Kafka，请点击以下链接- https://www.apache.org/dyn/closer.cgi?path=/kafka/1.0.0/kafka_2.12-1.0.0.tgz，现在，最新版本，即 – kafka_2.12-1.0.0.tgz将下载到您的计算机上。。 **步骤3.2**：解压缩tar文件 使用以下命令解压缩tar文件-
+ 现在，您已经在计算机上下载了最新版本的Kafka。 **步骤3.3**：启动服务器 您可以通过提供以下命令来启动服务器-
+ 服务器启动后，您将在屏幕上看到以下响应：
+    
+    ```bash
+    
+    $ cd opt/
+    $ tar -zxf kafka_2.12-1.0.0.tgz
+    $ cd kafka_2.12-1.0.0
+    ```
+    
+    ```bash
+    
+    $ bin/kafka-server-start.sh config/server.properties
+    ```
+    
+    ```bash
+    
+    $ bin/kafka-server-start.sh config/server.properties
+    [2016-01-02 15:37:30,410] INFO KafkaConfig values:
+    request.timeout.ms = 30000
+    log.roll.hours = 168
+    inter.broker.protocol.version = 1.0.0.X
+    log.preallocate = false
+    security.inter.broker.protocol = PLAINTEXT
+    …………………………………………….
+    …………………………………………….
+    ```
+    
+- 停止服务器 完成所有操作后，您可以使用以下命令停止服务器：
+ 既然我们已经讨论了Kafka的安装，我们将在下一章学习如何在Kafka上执行基本操作。
+    
+    ```bash
+    
+    $ bin/kafka-server-stop.sh config/server.properties
+    ```
+    
+
+# Kafka 基本操作
+
+- 基本操作 首先，让我们开始实现单节点单代理配置，然后将设置迁移到单节点多代理配置。希望您现在已经在计算机上安装了Java，ZooKeeper和Kafka。在转到Kafka Cluster设置之前，首先您需要启动ZooKeeper，因为Kafka 集群使用ZooKeeper。
+- 启动ZooKeeper 打开一个新的终端并键入以下命令-
+ 要启动Kafka Broker（代理），请输入以下命令-
+ 启动Kafka Broker后，在新的终端上键入命令jps，您将看到以下响应-
+ 现在，您可以看到两个守护程序在终端上运行，其中QuorumPeerMain是ZooKeeper守护程序，另一个是Kafka守护程序。
+    
+    ```bash
+    
+    bin/zookeeper-server-start.sh config/zookeeper.properties
+    ```
+    
+    ```bash
+    
+    bin/kafka-server-start.sh config/server.properties
+    ```
+    
+    ```bash
+    
+    821 QuorumPeerMain
+    928 Kafka
+    931 Jps
+    ```
+    
+- 单节点-单代理配置 在此配置中，您具有单个ZooKeeper和代理ID实例。以下是配置它的步骤- 创建Kafka主题(Topic)-Kafka提供了一个名为kafka-topics.sh的命令行实用程序，用于在服务器上创建主题。打开新终端，然后输入以下示例。 **语法**：
+**例子**： 使用以下命令更改Java替代方案。
+ 我们刚刚创建了一个名为Hello-Kafka的主题，该主题具有一个分区和一个副本因子。上面创建的输出将类似于以下输出- **输出** 创建主题后，您可以在Kafka 代理终端窗口中获得通知，并在config/server.properties文件的“/tmp/kafka-logs/”中指定创建的主题的日志。
+    
+    ```bash
+    
+    bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1  --partitions 1 --topic topic-name
+    ```
+    
+    ```bash
+    
+    bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1  --partitions 1 --topic Hello-Kafka
+    ```
+    
+    ```bash
+    
+    Created topic "Hello-Kafka"
+    ```
+    
+- 主题列表 要获取Kafka服务器中的主题列表，可以使用以下命令
+ 输出
+ 由于我们创建了主题，因此只会列出Hello-Kafka。假设，如果您创建多个主题，那么您将在输出中获得多个主题名称。 **启动生产者（Producer）发送消息语法：** 根据以上语法，producer命令行客户端需要两个主要参数- **broker-list** - 我们要将消息发送到的代理列表。在这种情况下，我们只有一个代理。config/server.properties文件包含代理端口ID，因为我们知道我们的代理正在侦听端口9092，因此您可以直接指定它。 **topic** - 这是主题名称。 例子：
+ 生产者将等待来自stdin的输入，然后发布到Kafka集群。默认情况下，每行都将发布为新消息，然后在config/producer.properties文件中指定默认的生产者属性。现在，您可以在终端中键入几行消息，如下所示。 输出量 键入以下命令-
+ 启动消费者以接收消息 与生产者相似，默认代理者属性在config/consumer.proper-ties文件中指定。打开一个新终端，然后输入以下语法来使用消息。 句法
+ 例:
+ 输出:
+ 最后，您可以从生产者的终端输入消息，并看到它们出现在消费者的终端中。到目前为止，您已经对具有单个代理的单节点群集有了很好的了解。现在，让我们继续进行多个代理配置。
+    
+    ```bash
+    
+    bin/kafka-topics.sh --list --zookeeper localhost:2181
+    ```
+    
+    ```bash
+    
+    Hello-Kafka
+    ```
+    
+    ```bash
+    
+    bin/kafka-console-producer.sh --broker-list localhost:9092 --topic topic-name
+    ```
+    
+    ```bash
+    
+    bin/kafka-console-producer.sh --broker-list localhost:9092 --topic Hello-Kafka
+    ```
+    
+    ```bash
+    
+    $ bin/kafka-console-producer.sh --broker-list localhost:9092
+    --topic Hello-Kafka[2016-01-16 13:50:45,931]
+    WARN property topic is not valid (kafka.utils.Verifia-bleProperties)
+    Hello
+    My first message
+    ```
+    
+    ```bash
+    
+    My second message
+    ```
+    
+    ```bash
+    
+    bin/kafka-console-consumer.sh --zookeeper localhost:2181 —topic topic-name  --from-beginning
+    ```
+    
+    ```bash
+    
+    bin/kafka-console-consumer.sh --zookeeper localhost:2181 —topic Hello-Kafka  --from-beginning
+    ```
+    
+    ```bash
+    
+    Hello
+    My first message
+    My second message
+    ```
+    
+- 单节点多代理配置 在继续进行多个代理群集设置之前，请先启动ZooKeeper服务器。创建多个Kafka代理-在 config/server.properties中已经有一个Kafka代理实例。现在我们需要多个代理实例，因此将现有的server.properties文件复制到两个新的配置文件中，并将其重命名为server-one.properties和server-two.properties。然后编辑两个新文件并分配以下更改- **config/server-one.propertiesconfig/server-two.properties步骤3.3**：启动服务器 您可以通过提供以下命令来启动服务器-
+ 启动多个代理 - 在三台服务器上完成所有更改后，然后打开三个新终端以逐个启动每个代理。
+ 现在，我们在计算机上运行了三个不同的代理。自己尝试通过在ZooKeeper终端上键入jps来检查所有守护程序，然后您将看到响应。 **创建主题**: 让我们为此主题分配复制因子值三个，因为我们正在运行三个不同的代理。如果您有两个代理，则分配的副本值将为两个。 语法：
+ 例子：
+ 输出：
+ 将describe命令用于检查哪个代理对当前创建的主题监听如下所示-
+ 输出：
+ 从上面的输出，我们可以得出结论，第一行给出了所有分区的摘要，显示了主题名称、分区计数和我们已经选择的复制因子。在第二行中，每个节点将成为分区中随机选择Leader。 在我们的例子中，我们看到我们的第一个代理（broker.id为0）是领导者。那么Replicas:0,2,1意味着所有的代理都复制这个主题，最后Isr是同步副本的集合。这是副本的子集，这些副本当前是活动的，并被领导者Leader捕获。 **启动生产者发送消息** 此过程与单一代理设置中的过程相同。 例:
+ 输出:
+**启动消费者以接收消息** 此过程与单代理设置中显示的过程相同。 例:
+ 输出:
+    
+    ```bash
+    
+    # The id of the broker. This must be set to a unique integer for each broker.
+    broker.id=1
+    # The port the socket server listens on
+    port=9093
+    # A comma seperated list of directories under which to store log files
+    log.dirs=/tmp/kafka-logs-1
+    ```
+    
+    ```bash
+    
+    # The id of the broker. This must be set to a unique integer for each broker.
+    broker.id=2
+    # The port the socket server listens on
+    port=9094
+    # A comma seperated list of directories under which to store log files
+    log.dirs=/tmp/kafka-logs-2
+    ```
+    
+    ```bash
+    
+    Broker1
+    bin/kafka-server-start.sh config/server.properties
+    Broker2
+    bin/kafka-server-start.sh config/server-one.properties
+    Broker3
+    bin/kafka-server-start.sh config/server-two.properties
+    ```
+    
+    ```bash
+    
+    bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 3  -partitions 1 --topic topic-name
+    ```
+    
+    ```bash
+    
+    bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 3  -partitions 1 --topic Multibrokerapplication
+    ```
+    
+    ```bash
+    
+    created topic “Multibrokerapplication”
+    ```
+    
+    ```bash
+    
+    bin/kafka-topics.sh --describe --zookeeper localhost:2181  --topic Multibrokerappli-cation
+    ```
+    
+    ```bash
+    
+    bin/kafka-topics.sh --describe --zookeeper localhost:2181
+    --topic Multibrokerappli-cation
+    
+    Topic:Multibrokerapplication    PartitionCount:1
+    ReplicationFactor:3 Configs:
+    
+    Topic:Multibrokerapplication Partition:0 Leader:0
+    Replicas:0,2,1 Isr:0,2,1
+    ```
+    
+    ```bash
+    
+    bin/kafka-console-producer.sh --broker-list localhost:9092  --topic Multibrokerapplication
+    ```
+    
+    ```bash
+    
+    bin/kafka-console-producer.sh --broker-list localhost:9092 --topic Multibrokerapplication
+    [2016-01-20 19:27:21,045] WARN Property topic is not valid (kafka.utils.Verifia-bleProperties)
+    This is single node-multi broker demo
+    This is the second message
+    ```
+    
+    ```bash
+    
+    bin/kafka-console-consumer.sh --zookeeper localhost:2181  —topic Multibrokerapplica-tion --from-beginning
+    ```
+    
+    ```bash
+    
+    bin/kafka-console-consumer.sh --zookeeper localhost:2181
+    —topic Multibrokerapplica-tion —from-beginning
+    This is single node-multi broker demo
+    This is the second message
+    ```
+    
+- 基本主题操作 在本章中，我们将讨论各种基本主题操作。 修改主题 您已经了解了如何在Kafka 集群中创建主题。现在，让我们使用以下命令修改创建的主题 语法：
+ 例子：
+ 输出：
+ 删除主题 要删除主题，可以使用以下语法。 语法：
+ 例子：
+ 输出：
+    
+    ```bash
+    
+    bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 3  -partitions 1 --topic topic-name
+    ```
+    
+    ```bash
+    
+    We have already created a topic “Hello-Kafka” with single partition count and one replica factor.
+    Now using “alter” command we have changed the partition count.
+    bin/kafka-topics.sh --zookeeper localhost:2181
+    --alter --topic Hello-kafka --parti-tions 2
+    ```
+    
+    ```bash
+    
+    WARNING: If partitions are increased for a topic that has a key,
+    the partition logic or ordering of the messages will be affected
+    Adding partitions succeeded!
+    ```
+    
+    ```bash
+    
+    bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic topic_name
+    ```
+    
+    ```bash
+    
+    bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic Hello-kafka
+    ```
+    
+    ```bash
+    
+    > Topic Hello-kafka marked for deletion
+    ```
+    
+    > **注意** - 如果delete.topic.enable未设置为true，则不会有任何影响
+    > 
+
+# Kafka 简单生产者/消费者示例
+
+- 简单生产者示例 让我们创建一个使用Java客户端发布和使用消息的应用程序。Kafka生产者客户端包含以下API。
+- KafkaProducer API 让我们了解本节中最重要的KafkaProducer API集。KafkaProducer API的核心部分是**KafkaProducer**类。**KafkaProducer**类提供了使用以下方法连接其构造函数中的Kafka代理的选项。
+    - **KafkaProducer**类提供了send方法，以将消息异步发送到主题（Topic）。**send()**的用法如下
+    
+    ```java
+    
+    KafkaProducer.send(new ProducerRecord<byte[],byte[]>(topic, partition, key1, value1) , callback);
+    ```
+    
+    - **ProducerRecord** - 生产者管理等待发送记录的缓冲区。
+    - **callback** - 用户提供的回调，在服务器确认记录后执行（空表示没有回调）。
+    - **KafkaProducer**类提供了**flush**方法，以确保所有先前发送的消息均已实际完成。**flush**方法的语法如下-
+    
+    ```java
+    
+    public void flush()
+    ```
+    
+    - **KafkaProducer**类提供了**partitionFor**方法，该方法有助于获取给定主题的分区元数据。这可以用于自定义分区。该方法的如下-
+    
+    ```java
+    
+    public Map metrics()  // 它返回生产者维护的内部指标图。
+    ```
+    
+    - **public void close()** - **KafkaProducer**类提供**close**方法块，直到所有先前发送的请求完成为止。
+- Producer API Producer API的核心部分是**Producer**类。**Producer**类提供了一种通过以下方法在其构造函数中连接Kafka 代理（Broker）的选项。 **Producer 类** Producer类提供了使用以下方法签名将消息发送到单个或多个主题的send方法。
+ Producer有两种类型：Sync（同步）和Async（异步）。 相同的API配置也适用于Sync生产者。它们之间的区别是同步生产者直接发送消息，但在后台发送消息。当您想要更高的吞吐量时，首选异步生成器。在像0.8这样的早期版本中，异步生产者没有用于send()的回调来注册错误处理程序。 **public void close()** Producer类提供了close方法，以关闭与所有Kafka 代理的生产者池连接。
+    
+    ```java
+    
+    public void send(KeyedMessaget<k,v> message) // 将数据发送到单个主题，并使用同步或异步生成器按key进行分配。
+    public void send(List<KeyedMessage<k,v>>messages)  //将数据发送到多个主题。
+    Properties prop = new Properties();
+    prop.put(producer.type,”async”)
+    ProducerConfig config = new ProducerConfig(prop);
+    ```
+    
+- 配置设定 下表列出了Producer API的主要配置设置，以便于更好地理解-
+    
+    
+    |  | 配置 |
+    | --- | --- |
+    |  | **client.id** |
+    |  | **producer.type** |
+    |  | **acks** |
+    |  | **retries** |
+    |  | **bootstrap.servers** |
+    |  | **linger.ms** |
+    |  | **key.serializer** |
+    |  | **value.serializer** |
+    |  | **batch.size** |
+    |  | **buffer.memory** |
+- ProducerRecord API**ProducerRecord**是一个键/值对，它被发送到Kafka集群。**ProducerRecord**类的构造函数用于使用以下签名创建具有分区，键值对的记录。
+ ProducerRecord类构造函数用于创建具有键，值对且无分区的记录。
+ ProducerRecord类创建一个没有分区和键的记录
+ 下表中列出了ProducerRecord类方法-
+    
+    ```java
+    
+    public ProducerRecord (string topic, int partition, k key, v value)
+    ```
+    
+    - **topic** -用户定义的主题名称，将附加到记录中。
+    - **partition** -分区数
+    - **key** - 将包含在记录中的key。
+    - **value** -记录内容(值)
+    
+    ```java
+    
+    public ProducerRecord (string topic, k key, v value)
+    ```
+    
+    - **topic** -用户定义的主题名称，将附加到记录中。
+    - **key** - 将包含在记录中的key。
+    - **value** -记录内容(值)
+    
+    ```java
+    
+    public ProducerRecord (string topic, v value)
+    ```
+    
+    - **topic** -用户定义的主题名称，将附加到记录中。
+    - **value** -记录内容(值)
+    
+    |  | 方法 |
+    | --- | --- |
+    |  | **public string topic()** |
+    |  | **public K key()** |
+    |  | **public V value()** |
+    |  | **partition()** |
+- SimpleProducer应用程序 在创建应用程序之前，首先启动ZooKeeper和Kafka代理，然后使用create topic命令在Kafka代理中创建自己的主题。之后，创建一个名为SimpleProducer.java的Java类，并输入以下代码。
+**编译** -可以使用以下命令来编译应用程序。
+**编译** -可以使用以下命令执行应用程序。
+**输出** 要检查上面的输出，请打开新终端并输入Consumer CLI命令来接收消息。
+    
+    ```java
+    
+    //import util.properties packages
+    import java.util.Properties;
+    
+    //import simple producer packages
+    import org.apache.kafka.clients.producer.Producer;
+    
+    //import KafkaProducer packages
+    import org.apache.kafka.clients.producer.KafkaProducer;
+    
+    //import ProducerRecord packages
+    import org.apache.kafka.clients.producer.ProducerRecord;
+    
+    //Create java class named “SimpleProducer”
+    public class SimpleProducer {
+    
+       public static void main(String[] args) throws Exception{
+    
+          // Check arguments length value
+          if(args.length == 0){
+             System.out.println("Enter topic name”);
+             return;
+          }
+    
+          //Assign topicName to string variable
+          String topicName = args[0].toString();
+    
+          // create instance for properties to access producer configs
+          Properties props = new Properties();
+    
+          //Assign localhost id
+          props.put("bootstrap.servers", “localhost:9092");
+    
+          //Set acknowledgements for producer requests.
+          props.put("acks", "all");
+    
+          //If the request fails, the producer can automatically retry,
+          props.put("retries", 0);
+    
+          //Specify buffer size in config
+          props.put("batch.size", 16384);
+    
+          //Reduce the no of requests less than 0
+          props.put("linger.ms", 1);
+    
+          //The buffer.memory controls the total amount of memory available to the producer for buffering.
+          props.put("buffer.memory", 33554432);
+    
+          props.put("key.serializer",
+             "org.apache.kafka.common.serializa-tion.StringSerializer");
+    
+          props.put("value.serializer",
+             "org.apache.kafka.common.serializa-tion.StringSerializer");
+    
+          Producer<String, String> producer = new KafkaProducer <String, String>(props);
+    
+          for(int i = 0; i < 10; i++)
+             producer.send(new ProducerRecord<String, String>(topicName,
+                Integer.toString(i), Integer.toString(i)));
+                   System.out.println(“Message sent successfully”);
+                   producer.close();
+       }
+    }
+    ```
+    
+    ```bash
+    
+    javac -cp "/path/to/kafka/kafka_2.12-1.0.0/lib/*"  *.java
+    ```
+    
+    ```bash
+    
+    java -cp "/path/to/kafka/kafka_2.12-1.0.0/lib/*":.  SimpleProducer <topic-name>
+    ```
+    
+    ```bash
+    
+    Message sent successfully
+    ```
+    
+    ```bash
+    
+    >> bin/kafka-console-consumer.sh --zookeeper localhost:2181 —topic <topic-name> —from-beginning
+    1
+    2
+    3
+    4
+    5
+    6
+    7
+    8
+    9
+    10
+    ```
+    
+- 简单的消费者示例 截至目前，我们已经创建了一个生产者，用于将消息发送到Kafka集群。现在让我们创建一个消费者以使用来自Kafka集群的消息。KafkaConsumer API用于消费来自Kafka集群的消息。KafkaConsumer类的构造函数在下面定义。 **语法**：
+**configs** - 返回使用者配置图。 **KafkaConsumer**类具有以下重要方法，下表中列出了这些方法。
+    
+    ```java
+    
+    public KafkaConsumer(java.util.Map<java.lang.String,java.lang.Object> configs)
+    ```
+    
+    |  | 方法 |
+    | --- | --- |
+    |  | **public java.util.Set assignment()** |
+    |  | **public string subscription()** |
+    |  | **public void sub-scribe(java.util.List<java.lang.String> topics, ConsumerRe-balanceListener listener)** |
+    |  | **public void unsubscribe()** |
+    |  | **public void sub-scribe(java.util.List<java.lang.String> topics)** |
+    |  | **public void sub-scribe(java.util.regex.Pattern pattern, ConsumerRebalanceLis-tener listener)** |
+    |  | **public void as-sign(java.util.List partitions)** |
+    |  | **poll()** |
+    |  | **public void commitSync()** |
+    |  | **public void seek(TopicPartition partition, long offset)** |
+    |  | **public void resume()** |
+    |  | **public void wakeup()** |
+- ConsumerRecord API**ConsumerRecord** API用于接收来自Kafka集群的记录。该API由主题名称，分区号（从中接收记录）以及指向Kafka分区中的记录的偏移量组成。ConsumerRecord类用于创建具有特定主题名称，分区计数和<键，值>对的消费者记录。它具有以下签名。
+    
+    ```java
+    
+    public ConsumerRecord(string topic,int partition, long offset,K key, V value)
+    ```
+    
+    - **topic** - 从Kafka集群收到的消费者记录的主题名称。
+    - **partition** - 主题分区。
+    - **offset** - 记录的键，如果不存在键，则返回null。
+    - **value** - 记录内容。
+- ConsumerRecords API**ConsumerRecords** API充当**ConsumerRecord**的容器。该API用于保留特定主题的每个分区的**ConsumerRecord**列表。其构造函数定义如下。
+ ConsumerRecords类具有以下定义的方法。
+    
+    ```java
+    
+    public ConsumerRecords(java.util.Map<TopicPartition,java.util.List<Consumer-Record>K,V>>> records)
+    ```
+    
+    - **TopicPartition** - 返回特定主题的分区图。
+    - **records** - ConsumerRecord的返回列表。
+    
+    |  | 方法 |
+    | --- | --- |
+    |  | **public int count()** |
+    |  | **public Set partitions()** |
+    |  | **public Iterator iterator()** |
+    |  | **public List records()** |
+- 配置设定 消费者客户端API主要配置设置的配置设置在下面列出-
+    
+    
+    |  | 方法 |
+    | --- | --- |
+    |  | **bootstrap.servers** |
+    |  | **group.id** |
+    |  | **enable.auto.commit** |
+    |  | **auto.commit.interval.ms** |
+    |  | **session.timeout.ms** |
+- SimpleConsumer应用程序 生产者应用程序步骤在此保持不变。首先，启动您的ZooKeeper和Kafka经纪人。然后，使用名为SimpleConsumer.java的Java类创建SimpleConsumer应用程序，并键入以下代码。 **输出编译** -可以使用以下命令来编译应用程序。
+**执行**可以使用以下命令执行应用程序
+**输入** - 打开生产者CLI，并向该主题发送一些消息。例如输入“Hello Consumer”发送。
+**输出** -以下将是输出。
+    
+    ```bash
+    
+    import java.util.Properties;
+    import java.util.Arrays;
+    import org.apache.kafka.clients.consumer.KafkaConsumer;
+    import org.apache.kafka.clients.consumer.ConsumerRecords;
+    import org.apache.kafka.clients.consumer.ConsumerRecord;
+    
+    public class SimpleConsumer {
+       public static void main(String[] args) throws Exception {
+          if(args.length == 0){
+             System.out.println("Enter topic name");
+             return;
+          }
+          //Kafka consumer configuration settings
+          String topicName = args[0].toString();
+          Properties props = new Properties();
+    
+          props.put("bootstrap.servers", "localhost:9092");
+          props.put("group.id", "test");
+          props.put("enable.auto.commit", "true");
+          props.put("auto.commit.interval.ms", "1000");
+          props.put("session.timeout.ms", "30000");
+          props.put("key.deserializer",
+             "org.apache.kafka.common.serializa-tion.StringDeserializer");
+          props.put("value.deserializer",
+             "org.apache.kafka.common.serializa-tion.StringDeserializer");
+          KafkaConsumer<String, String> consumer = new KafkaConsumer
+             <String, String>(props);
+    
+          //Kafka Consumer subscribes list of topics here.
+          consumer.subscribe(Arrays.asList(topicName))
+    
+          //print the topic name
+          System.out.println("Subscribed to topic " + topicName);
+          int i = 0;
+    
+          while (true) {
+             ConsumerRecords<String, String> records = con-sumer.poll(100);
+             for (ConsumerRecord<String, String> record : records)
+    
+             // print the offset,key and value for the consumer records.
+             System.out.printf("offset = %d, key = %s, value = %s\n",
+                record.offset(), record.key(), record.value());
+          }
+       }
+    }
+    ```
+    
+    ```bash
+    
+    javac -cp "/path/to/kafka/kafka_2.12-1.0.0/lib/*" *.java
+    ```
+    
+    ```bash
+    
+    java -cp "/path/to/kafka/kafka_2.11-0.9.0.0/lib/*":. SimpleConsumer <topic-name>
+    ```
+    
+    ```bash
+    
+    bin/kafka-console-producer.sh --broker-list localhost:9092 --topic topic-name
+    ```
+    
+    ```bash
+    
+    Subscribed to topic Hello-Kafka
+    offset = 3, key = null, value = Hello Consumer
+    ```
+    
+
+# Kafka 消费者组示例
+
+- 消费者组 消费者组是来自Kafka主题的多线程或多计算机消费。
+- 消费组**消费者的重新平衡** 添加更多的进程/线程将导致Kafka重新平衡。如果任何消费者或代理无法将心跳发送到ZooKeeper，则可以通过Kafka群集对其进行重新配置。在这种重新平衡期间，Kafka会将可用分区分配给可用线程，可能会将一个分区移至另一个进程。
+**编译** -可以使用以下命令来编译应用程序。
+**执行** -可以使用以下命令执行应用程序。
+ 在这里，我们创建了一个具有两个使用者的示例组名称作为my-group。同样，您可以创建组和该组中的消费者数量。 **输入值** 打开生产者CLI并发送一些消息，例如-
+**第一过程的输出第二过程的输出** 现在希望您可以通过使用Java客户端演示了解SimpleConsumer和ConsumeGroup。现在您有了一个关于如何使用Java客户端发送和接收消息的想法。在下一章中，让我们继续将Kafka与大数据技术集成。
+    - 消费者可以使用相同的group.id加入一个组。
+    - 组的最大并行度是组中的使用者数量←没有分区。
+    - Kafka将主题的分区分配给组中的使用者，以便每个分区都由组中的一个使用者完全使用。
+    - Kafka保证消息只能由该组中的单个消费者读取。
+    - 消费者可以按照存储在日志中的顺序查看消息。
+    
+    ```java
+    
+    import java.util.Properties;
+    import java.util.Arrays;
+    import org.apache.kafka.clients.consumer.KafkaConsumer;
+    import org.apache.kafka.clients.consumer.ConsumerRecords;
+    import org.apache.kafka.clients.consumer.ConsumerRecord;
+    
+    public class ConsumerGroup {
+       public static void main(String[] args) throws Exception {
+          if(args.length < 2){
+             System.out.println("Usage: consumer <topic> <groupname>");
+             return;
+          }
+    
+          String topic = args[0].toString();
+          String group = args[1].toString();
+          Properties props = new Properties();
+          props.put("bootstrap.servers", "localhost:9092");
+          props.put("group.id", group);
+          props.put("enable.auto.commit", "true");
+          props.put("auto.commit.interval.ms", "1000");
+          props.put("session.timeout.ms", "30000");
+          props.put("key.deserializer",
+             "org.apache.kafka.common.serialization.ByteArraySerializer");
+          props.put("value.deserializer",
+             "org.apache.kafka.common.serializa-tion.StringDeserializer");
+          KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(props);
+    
+          consumer.subscribe(Arrays.asList(topic));
+          System.out.println("Subscribed to topic " + topic);
+          int i = 0;
+    
+          while (true) {
+             ConsumerRecords<String, String> records = consumer.poll(100);
+                for (ConsumerRecord<String, String> record : records)
+                   System.out.printf("offset = %d, key = %s, value = %s\n",
+                   record.offset(), record.key(), record.value());
+          }
+       }
+    }
+    ```
+    
+    ```bash
+    
+    javac -cp "/path/to/kafka/kafka_2.12-1.0.0/libs/*" ConsumerGroup.java
+    ```
+    
+    ```bash
+    
+    >>java -cp "/path/to/kafka/kafka_2.12-1.0.0/libs/*":.
+    ConsumerGroup <topic-name> my-group
+    >>java -cp "/home/bala/Workspace/kafka/kafka_2.12-1.0.0/libs/*":.
+    ConsumerGroup <topic-name> my-group
+    ```
+    
+    ```bash
+    
+    Test consumer group 01
+    Test consumer group 02
+    ```
+    
+    ```bash
+    
+    Subscribed to topic Hello-kafka
+    offset = 3, key = null, value = Test consumer group 01
+    ```
+    
+    ```bash
+    
+    Subscribed to topic Hello-kafka
+    offset = 3, key = null, value = Test consumer group 02
+    ```
+    
+
+# Kafka 与Storm集成
+
+- Apache Storm集成。 在本章中，我们将学习如何将Kafka与Apache Storm集成。
+- 关于Storm Storm最初是由内森·马兹（Nathan Marz）和BackType团队创建的。在短时间内，Apache Storm成为分布式实时处理系统的标准，该系统使您可以处理大量数据。Storm的速度非常快，基准测试表明它每秒可处理每个节点超过一百万个元组。Apache Storm持续运行，使用来自已配置源（Spouts）的数据，并将数据向下传递到处理管道（Bolts）。喷头和螺栓结合在一起构成一个拓扑。
+- 与Storm整合 Kafka和Storm自然互补，它们的强大合作可实现实时流分析，以快速移动大数据。Kafka和Storm的集成将使开发人员更轻松地从Storm拓扑中提取和发布数据流。 **概念流** 壶嘴是溪流的源头。例如，喷口可能会从Kafka主题中读取元组并将其作为流发出。螺栓消耗输入流，处理并可能发出新流。螺栓可以执行任何操作，包括运行函数，过滤元组，执行流聚合，流连接，与数据库对话等等。Storm拓扑中的每个节点都并行执行。拓扑无限期运行，直到您终止它。Storm将自动重新分配所有失败的任务。此外，Storm保证即使机器宕机和消息丢失也不会丢失数据。 让我们详细了解Kafka-Storm集成API。有三个主要的类将Kafka与Storm集成。它们如下- **BrokerHosts-ZkHosts和StaticHostsBrokerHosts**是一个接口，**ZkHosts**和**StaticHosts**是它的两个主要实现。**ZkHosts**用于通过在ZooKeeper中维护详细信息来动态跟踪Kafka代理，而**StaticHosts**用于手动/静态设置Kafka代理及其详细信息。**ZkHosts**是访问Kafka代理的简单快速的方法。 ZkHosts的签名如下-
+ 其中brokerZkStr是ZooKeeper主机，而brokerZkPath是ZooKeeper路径，用于维护Kafka代理详细信息。 **KafkaConfig API** 该API用于定义Kafka集群的配置设置。KafkaConfig的签名定义如下
+**SpoutConfig API** Spoutconfig是KafkaConfig的扩展，支持其他ZooKeeper信息。
+**SchemeAsMultiScheme** SchemeAsMultiScheme是一个接口，指示从Kafka消耗的ByteBuffer如何转换为Storm元组。它从MultiScheme派生并接受Scheme类的实现。Scheme类有很多实现，StringScheme是这样的实现，它将字节解析为简单字符串。它还控制输出字段的命名。签名定义如下。
+**KafkaSpout API** KafkaSpout是我们的spout实施，它将与Storm集成。它从kafka主题中获取消息，并将其作为元组发送到Storm生态系统中。KafkaSpout从SpoutConfig获取其配置详细信息。 以下是创建简单的KafkaSpout的示例代码。
+    
+    ```java
+    
+    public ZkHosts(String brokerZkStr, String brokerZkPath)
+    public ZkHosts(String brokerZkStr)
+    ```
+    
+    ```java
+    
+    public KafkaConfig(BrokerHosts hosts, string topic)
+    ```
+    
+    - **hosts** - BrokerHosts可以是ZkHosts/StaticHosts。
+    - **topic** - 主题名称。
+    
+    ```java
+    
+    public SpoutConfig(BrokerHosts hosts, string topic, string zkRoot, string id)
+    ```
+    
+    - **hosts** - BrokerHosts可以是BrokerHosts接口的任何实现
+    - **topic** - 主题名称。
+    - **zkRoot** - ZooKeeper根路径。
+    - **id**喷口存储其在Zookeeper中消耗的偏移量的状态。该ID应该唯一标识您的壶嘴。
+    
+    ```java
+    
+    public SchemeAsMultiScheme(Scheme scheme)
+    ```
+    
+    - **scheme** - 从Kafka消耗的字节缓冲区。
+    
+    ```java
+    
+    // ZooKeeper connection string
+    BrokerHosts hosts = new ZkHosts(zkConnString);
+    
+    //Creating SpoutConfig Object
+    SpoutConfig spoutConfig = new SpoutConfig(hosts,
+       topicName, "/" + topicName UUID.randomUUID().toString());
+    
+    //convert the ByteBuffer to String.
+    spoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
+    
+    //Assign SpoutConfig to KafkaSpout.
+    KafkaSpout kafkaSpout = new KafkaSpout(spoutConfig);
+    ```
+    
+- 螺栓创建 Bolt是一个将元组作为输入，处理该元组并生成新的元组作为输出的组件。螺栓(Bolt)将实现IRichBolt接口。在此程序中，两个螺栓类WordSplitterBolt和WordCounterBolt用于执行操作。 IRichBolt接口具有以下方法-
+ 让我们创建SplitBolt.java和CountBolt.java，前者实现将句子拆分成单词的逻辑，而CountBolt.java实现分离独特单词并计算其出现次数的逻辑。 **SplitBolt.javaCountBolt.java**
+    - **Prepare** - 为螺栓提供执行环境。执行者将运行此方法初始化喷口。
+    - **Execute** - 处理单个输入元组。
+    - **Cleanup** - 当螺栓即将关闭时调用。
+    - **clarifyOutputFields** - 声明元组的输出模式。
+    
+    ```java
+    
+    import java.util.Map;
+    
+    import backtype.storm.tuple.Tuple;
+    import backtype.storm.tuple.Fields;
+    import backtype.storm.tuple.Values;
+    
+    import backtype.storm.task.OutputCollector;
+    import backtype.storm.topology.OutputFieldsDeclarer;
+    import backtype.storm.topology.IRichBolt;
+    import backtype.storm.task.TopologyContext;
+    
+    public class SplitBolt implements IRichBolt {
+       private OutputCollector collector;
+    
+       @Override
+       public void prepare(Map stormConf, TopologyContext context,
+          OutputCollector collector) {
+          this.collector = collector;
+       }
+    
+       @Override
+       public void execute(Tuple input) {
+          String sentence = input.getString(0);
+          String[] words = sentence.split(" ");
+    
+          for(String word: words) {
+             word = word.trim();
+    
+             if(!word.isEmpty()) {
+                word = word.toLowerCase();
+                collector.emit(new Values(word));
+             }
+    
+          }
+    
+          collector.ack(input);
+       }
+    
+       @Override
+       public void declareOutputFields(OutputFieldsDeclarer declarer) {
+          declarer.declare(new Fields("word"));
+       }
+    
+       @Override
+       public void cleanup() {}
+    
+       @Override
+       public Map<String, Object> getComponentConfiguration() {
+          return null;
+       }
+    
+    }
+    ```
+    
+    ```java
+    
+    import java.util.Map;
+    import java.util.HashMap;
+    
+    import backtype.storm.tuple.Tuple;
+    import backtype.storm.task.OutputCollector;
+    import backtype.storm.topology.OutputFieldsDeclarer;
+    import backtype.storm.topology.IRichBolt;
+    import backtype.storm.task.TopologyContext;
+    
+    public class CountBolt implements IRichBolt{
+       Map<String, Integer> counters;
+       private OutputCollector collector;
+    
+       @Override
+       public void prepare(Map stormConf, TopologyContext context,
+       OutputCollector collector) {
+          this.counters = new HashMap<String, Integer>();
+          this.collector = collector;
+       }
+    
+       @Override
+       public void execute(Tuple input) {
+          String str = input.getString(0);
+    
+          if(!counters.containsKey(str)){
+             counters.put(str, 1);
+          }else {
+             Integer c = counters.get(str) +1;
+             counters.put(str, c);
+          }
+    
+          collector.ack(input);
+       }
+    
+       @Override
+       public void cleanup() {
+          for(Map.Entry<String, Integer> entry:counters.entrySet()){
+             System.out.println(entry.getKey()+" : " + entry.getValue());
+          }
+       }
+    
+       @Override
+       public void declareOutputFields(OutputFieldsDeclarer declarer) {
+    
+       }
+    
+       @Override
+       public Map<String, Object> getComponentConfiguration() {
+          return null;
+       }
+    }
+    ```
+    
+- 提交拓扑 Storm拓扑基本上是Thrift结构。TopologyBuilder类提供了创建复杂拓扑的简单方法。TopologyBuilder类具有设置喷口（setSpout）和设置螺栓（setBolt）的方法。最后，TopologyBuilder具有createTopology来创建拓扑。shuffleGrouping和fieldsGrouping方法有助于为喷口和螺栓设置流分组。 **本地群集** - 出于开发目的，我们可以使用LocalCluster对象创建本地群集，然后使用LocalCluster类的SubmitTopology方法提交拓扑。 **KafkaStormSample.java** 在进行编译之前，Kakfa-Storm集成需要管理者ZooKeeper客户端Java库。Curator版本2.9.1支持Apache Storm版本0.9.5（我们在本教程中使用）。下载以下指定的jar文件并将其放在java类路径中。
+ 包含依赖项文件后，使用以下命令编译程序，
+**执行** 启动Kafka Producer CLI（在上一章中进行了说明），创建一个名为my-first-topic的新主题，并提供一些示例消息，如下所示-
+ 现在使用以下命令执行应用程序-
+ 该应用程序的示例输出在下面指定-
+    
+    ```java
+    
+    import backtype.storm.Config;
+    import backtype.storm.LocalCluster;
+    import backtype.storm.topology.TopologyBuilder;
+    
+    import java.util.ArrayList;
+    import java.util.List;
+    import java.util.UUID;
+    
+    import backtype.storm.spout.SchemeAsMultiScheme;
+    import storm.kafka.trident.GlobalPartitionInformation;
+    import storm.kafka.ZkHosts;
+    import storm.kafka.Broker;
+    import storm.kafka.StaticHosts;
+    import storm.kafka.BrokerHosts;
+    import storm.kafka.SpoutConfig;
+    import storm.kafka.KafkaConfig;
+    import storm.kafka.KafkaSpout;
+    import storm.kafka.StringScheme;
+    
+    public class KafkaStormSample {
+       public static void main(String[] args) throws Exception{
+          Config config = new Config();
+          config.setDebug(true);
+          config.put(Config.TOPOLOGY_MAX_SPOUT_PENDING, 1);
+          String zkConnString = "localhost:2181";
+          String topic = "my-first-topic";
+          BrokerHosts hosts = new ZkHosts(zkConnString);
+    
+          SpoutConfig kafkaSpoutConfig = new SpoutConfig (hosts, topic, "/" + topic,
+             UUID.randomUUID().toString());
+          kafkaSpoutConfig.bufferSizeBytes = 1024 * 1024 * 4;
+          kafkaSpoutConfig.fetchSizeBytes = 1024 * 1024 * 4;
+          kafkaSpoutConfig.forceFromStart = true;
+          kafkaSpoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
+    
+          TopologyBuilder builder = new TopologyBuilder();
+          builder.setSpout("kafka-spout", new KafkaSpout(kafkaSpoutCon-fig));
+          builder.setBolt("word-spitter", new SplitBolt()).shuffleGroup-ing("kafka-spout");
+          builder.setBolt("word-counter", new CountBolt()).shuffleGroup-ing("word-spitter");
+    
+          LocalCluster cluster = new LocalCluster();
+          cluster.submitTopology("KafkaStormSample", config, builder.create-Topology());
+    
+          Thread.sleep(10000);
+    
+          cluster.shutdown();
+       }
+    }
+    ```
+    
+    - curator-client-2.9.1.jar
+    - curator-framework-2.9.1.jar
+    
+    ```bash
+    
+    javac -cp "/path/to/Kafka/apache-storm-0.9.5/lib/*" *.java
+    ```
+    
+    ```bash
+    
+    hello
+    kafka
+    storm
+    spark
+    test message
+    another test message
+    ```
+    
+    ```bash
+    
+    java -cp "/path/to/Kafka/apache-storm-0.9.5/lib/*" KafkaStormSample
+    ```
+    
+    ```bash
+    
+    storm : 1
+    test : 2
+    spark : 1
+    another : 1
+    kafka : 1
+    hello : 1
+    message : 2
+    ```
+    
+
+# Kafka 与Spark集成
+
+- 与Spark集成。 在本章中，我们将讨论如何将Apache Kafka与Spark Streaming API集成。
+- 关于Spark Spark Streaming API支持实时数据流的可扩展，高吞吐量，容错流处理。数据可以从许多来源（例如Kafka，Flume，Twitter等）中提取，并可以使用复杂的算法（例如高级功能（如map，reduce，join和window））进行处理。最后，可以将处理后的数据推送到文件系统，数据库和实时仪表板。弹性分布式数据集（RDD）是Spark的基本数据结构。它是对象的不可变分布式集合。RDD中的每个数据集都分为逻辑分区，可以在群集的不同节点上进行计算。
+- 与Spark集成 Kafka是潜在的Spark流消息传递和集成平台。Kafka充当实时数据流的中心枢纽，并在Spark Streaming中使用复杂的算法进行处理。处理完数据后，Spark Streaming可能会将结果发布到另一个Kafka主题中，或存储在HDFS，数据库或仪表板中。下图描述了概念流程。  现在，让我们详细了解Kafka-Spark API。 **SparkConf API** 它代表Spark应用程序的配置。用于将各种Spark参数设置为键值对。 SparkConf类具有以下方法-
+**StreamingContext API** 这是Spark功能的主要切入点。SparkContext表示与Spark集群的连接，可用于在集群上创建RDD，累加器和广播变量。签名定义如下。
+**KafkaUtils API** KafkaUtils API用于将Kafka集群连接到Spark流。该API具有如下定义的有意义的方法createStream签名。
+ KafkaUtils API还有另一个方法createDirectStream，该方法用于创建输入流，该输入流直接从Kafka Brokers提取消息，而无需使用任何接收器。该流可以确保将来自Kafka的每个消息准确地包含在转换中一次。 示例应用程序在Scala中完成。要编译该应用程序，请下载并安装sbt，scala构建工具（类似于maven）。主要应用代码如下所示。
+**构建脚本** spark-kafka集成取决于spark，spark stream和spark Kafka集成jar。创建一个新文件build.sbt并指定应用程序详细信息及其依赖性。该SBT在编译和打包应用程序会下载必要的jar。
+**编译/打包** 运行以下命令来编译和打包应用程序的jar文件。我们需要将jar文件提交到spark控制台以运行该应用程序。
+**提交给Spark** 启动Kafka Producer CLI（在上一章中进行了说明），创建一个名为my-first-topic的新主题，并提供一些示例消息，如下所示。
+ 运行以下命令以将应用程序提交到Spark控制台。
+ 该应用程序的示例输出如下所示。
+    
+    ![](https://www.cainiaoya.com/images/kafka/spark.jpg)
+    
+    - **set(string key, string value) -** 设置配置变量。
+    - **remove(string key) -** 从配置中删除key。
+    - **setAppName(string name) -** 为您的应用程序设置应用程序名称。
+    - **get(string key) -** 获取键
+    
+    ```java
+    
+    public StreamingContext(String master, String appName, Duration batchDuration, String sparkHome, scala.collection.Seq<String> jars, scala.collection.Map<String,String> environment)
+    ```
+    
+    - **master** - 簇URL连接到（例如mesos://主机:端口，spark://主机:端口，local[4]）。
+    - **appName** - 您的工作的名称，显示在群集Web UI上
+    - **batchDuration** - 将流数据分为几批的时间间隔
+    
+    ```java
+    
+    public StreamingContext(SparkConf conf, Duration batchDuration)
+    ```
+    
+    - **conf** - Spark参数
+    - **batchDuration** - 将流数据分为几批的时间间隔
+    
+    ```java
+    
+    public static ReceiverInputDStream<scala.Tuple2<String,String>> createStream(
+       StreamingContext ssc, String zkQuorum, String groupId,
+       scala.collection.immutable.Map<String,Object> topics, StorageLevel storageLevel)
+    ```
+    
+    - **ssc** - StreamingContext对象。
+    - **zkQuorum** - Zookeeper仲裁。
+    - **groupId** - 该使用者的组ID。
+    - **topics** - 返回要使用的主题图。
+    - **storageLevel** - 用于存储接收到的对象的存储级别。
+    
+    ```scala
+    
+    import java.util.HashMap
+    
+    import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, Produc-erRecord}
+    import org.apache.spark.SparkConf
+    import org.apache.spark.streaming._
+    import org.apache.spark.streaming.kafka._
+    
+    object KafkaWordCount {
+       def main(args: Array[String]) {
+          if (args.length < 4) {
+             System.err.println("Usage: KafkaWordCount <zkQuorum><group> <topics> <numThreads>")
+             System.exit(1)
+          }
+    
+          val Array(zkQuorum, group, topics, numThreads) = args
+          val sparkConf = new SparkConf().setAppName("KafkaWordCount")
+          val ssc = new StreamingContext(sparkConf, Seconds(2))
+          ssc.checkpoint("checkpoint")
+    
+          val topicMap = topics.split(",").map((_, numThreads.toInt)).toMap
+          val lines = KafkaUtils.createStream(ssc, zkQuorum, group, topicMap).map(_._2)
+          val words = lines.flatMap(_.split(" "))
+          val wordCounts = words.map(x => (x, 1L))
+             .reduceByKeyAndWindow(_ + _, _ - _, Minutes(10), Seconds(2), 2)
+          wordCounts.print()
+    
+          ssc.start()
+          ssc.awaitTermination()
+       }
+    }
+    ```
+    
+    ```bash
+    
+    name := "Spark Kafka Project"
+    version := "1.0"
+    scalaVersion := "2.10.5"
+    
+    libraryDependencies += "org.apache.spark" %% "spark-core" % "1.6.0"
+    libraryDependencies += "org.apache.spark" %% "spark-streaming" % "1.6.0"
+    libraryDependencies += "org.apache.spark" %% "spark-streaming-kafka" % "1.6.0"
+    ```
+    
+    ```bash
+    
+    sbt package
+    ```
+    
+    ```bash
+    
+    Another spark test message
+    ```
+    
+    ```bash
+    
+    /usr/local/spark/bin/spark-submit --packages org.apache.spark:spark-streaming
+    -kafka_2.10:1.6.0 --class "KafkaWordCount" --master local[4] target/scala-2.10/spark
+    -kafka-project_2.10-1.0.jar localhost:2181 <group name> <topic name> <number of threads>
+    ```
+    
+    ```bash
+    
+    spark console messages ..
+    (Test,1)
+    (spark,1)
+    (another,1)
+    (message,1)
+    spark console message ..
+    ```
+    
+
+# Kafka 工具&应用程序
+
+- 工具 Kafka工具打包在“org.apache.kafka.tools.*”下。工具分为系统工具和复制工具。
+- 系统工具 可以使用运行类脚本从命令行运行系统工具。语法如下-
+ 下面提到了一些系统工具-
+    
+    ```bash
+    
+    bin/kafka-run-class.sh package.class - - options
+    ```
+    
+    - **Kafka迁移工具** - 此工具用于将代理从一个版本迁移到另一个版本。
+    - **Mirror Maker** - 此工具用于将一个Kafka群集镜像到另一个。
+    - **消费者偏移检查器** - 此工具显示指定主题和消费者组的消费者组，主题，分区，偏移，logSize，所有者。
+- 复制工具 Kafka复制是高级设计工具。添加复制工具的目的是为了实现更高的持久性和更高的可用性。下面提到了一些复制工具-
+    - **创建主题工具** - 这将创建一个具有默认分区数，复制因子的主题，并使用Kafka的默认方案进行副本分配。
+    - **列表主题工具** - 该工具列出给定主题列表的信息。如果命令行中未提供主题，该工具将查询Zookeeper以获取所有主题并列出其信息。该工具显示的字段是主题名称，分区，领导者，副本，isr。
+    - **添加分区工具** - 创建主题，必须指定主题的分区数。稍后，当主题的数量将增加时，主题可能需要更多的分区。该工具有助于为特定主题添加更多分区，并且还允许对添加的分区进行手动副本分配。
+- 应用程序 Kafka支持当今许多最佳的工业应用。在本章中，我们将简要概述Kafka的一些最著名的应用程序。
+- 推特(Twitter) Twitter是一种在线社交网络服务，提供了发送和接收用户推文的平台。注册用户可以阅读和发布推文，但未注册用户只能阅读推文。Twitter使用Storm-Kafka作为其流处理基础结构的一部分。
+- 领英(LinkedIn) LinkedIn上将Apache Kafka用于活动流数据和运营指标。Kafka mes-saging系统可以帮助LinkedIn提供各种产品，例如LinkedIn Newsfeed，LinkedIn Today，以用于在线消息消费以及Hadoop等离线分析系统。Kafka的坚固耐用性也是与LinkedIn相关的关键因素之一。
+- 奈飞(Netflix) Netflix是点播互联网流媒体的美国跨国提供商。Netflix使用Kafka进行实时监控和事件处理。
+- Mozilla Mozilla是一个免费软件社区，由Netscape成员于1998年创建。Kafka很快将替换Mozilla当前生产系统的一部分，以从最终用户的浏览器中收集遥测，测试飞行员等项目的性能和使用情况数据。
+- 甲骨文(Oracle) Oracle通过其称为OSB（Oracle Service Bus）的企业服务总线产品提供了与Kafka的本地连接，该产品允许开发人员利用OSB内置的中介功能来实现分段数据管道。
