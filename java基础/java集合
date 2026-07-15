@@ -1,0 +1,270 @@
+!image.png
+
+用来存储多个元素的容器
+
+!image.png
+
+!image.png
+
+集合分为单列集合和双列集合，单列集合包括List接口（常用类：ArrayList,LinkedList,Vector）,Set接口（常用类：HashSet,TreeSet）。双列集合为Map接口（常用类：HashMap,LinkedHashMap,HashTable,Properties,TreeMap）
+
+**Δ注意 : Collection, List, Set, Map这四个都是接口。**
+
+## List接口
+
+接口不能直接被实例化。因此**需要通过创建其子类对象来完成该接口的实例化（即多态）**。List接口的常用子类有ArrayList类，LinkedList类等。
+
+1.List集合是有序集合，元素存取是一致的（元素原来存在哪就在那取出），可以通过索引方式访问
+
+2.元素可以重复
+
+!image.png
+
+!image.png
+
+!image.png
+
+!image.png
+
+ArrayList默认长度为0，首次扩容为10，以后扩容为当前长度的1.5倍。带参构造为参数长度，以后为扩容当前长度的1.5倍
+
+java ArrayList源码分析（深度讲解）-CSDN博客
+
+java Vector 源码分析（深度讲解）_vector java-CSDN博客
+
+ArrayList线程不同步，线程不安全
+
+Vector线程同步更安全
+
+两者均可动态修改数组
+
+!image.png
+
+**(注意Vector维护的elementData数组没有用transient关键字修饰)**
+
+Vector默认长度为10，以后扩容为2倍。带参构造为参数长度，以后扩容为2倍，不超过上限两倍情况下**①**Vector类的外层add方法用了synchronized关键字修饰，表示线程同步
+
+## LinkedList
+
+、
+
+是线性表，每个节点存储下一个节点地址
+
+!image.png
+
+!image.png
+
+!image.png
+
+java LinkedList 源码分析（通俗易懂)_linkedlist源码分析-CSDN博客
+
+栓除和添加不是通过数组完成而是通过链表完成
+
+!image.png
+
+**形参列表为空的remove() 方法，其内部默认调用的是removeFrist方法，即默认删去链表中的第一个元素**；
+形参列表需要传入一个索引的remove(int index) 方法，可以删去链表中指定索引位置的元素，较复杂；形参列表需要传入一个Object类型的值的remove(Object o)方法，是删去链表中与该值匹配的第一个元素。
+
+!image.png
+
+里的modCount是记录结构性修改次数防止过多修改
+
+### **什么是 "结构性修改"？**
+
+指改变集合大小或影响迭代器遍历的操作，例如：
+
+- 添加元素（`add()`、`addFirst()`、`addLast()` 等）
+- 删除元素（`remove()`、`removeFirst()`、`clear()` 等）
+- 修改集合大小的其他操作
+
+这一机制的目的是**避免迭代器使用不一致的集合状态**，提前暴露并发修改问题，而不是等到出现不可预期的结果。
+
+# Set
+
+java 单列集合Set 万字详解-阿里云开发者社区
+
+!image.png
+
+set集合是无序的，没有索引不能通过索引访问元素，所以不能for循环但是**Set集合可以使用增强for和迭代器来遍历**
+
+**PS :**
+
+虽然Set集合取出元素和存入元素时的顺序不一致，但是依赖于Set集合的底层算法，**元素在取出时的顺序是固定的**，不管你取出多少次。即输出Set集合时，元素在集合中的排列顺序是固定的。
+
+set元素不可重复，因此最多包含一个null
+
+增强for循环，与迭代器
+
+java 增强for和迭代器 万字详解 (粗俗易懂)-阿里云开发者社区
+
+!image.png
+
+!image.png
+
+迭代器作用是给hi同意方式遍历不同集合对象
+
+## HashSet
+
+java HashSet 源码分析（深度讲解）_java hashset源码-CSDN博客
+
+!image.png
+
+显而易见，HashSet底层调用了HashMap。 而**HashMap的底层是"数组 + 链表 + 红黑树"的结构**。简单来说，即数组的元素是一个链表，并且在某些条件下会将链表树化为红黑树。
+**当我们向HashSet集合中添加一个元素时，会先得到一个该数据的hash值(哈希值)，然后在底层将它转化为一个索引值。**这个**索引值决定该元素在集合中应该存放的位置**，这也解释了为什么尽管Set集合是无序的，但输出Set集合时元素的排列顺序总是一致的。
+
+当索引值对应的位置没有元素存在时，直接将当前元素加入集合。
+反之，则调用equals方法进行判断，如果当前要添加的元素与该位置处的元素判断为相等，放弃添加该元素；如果当前元素与该位置处的元素判断为不相等，则将当前元素添加到（挂到）该位置处元素的最后面。这便实现了"数组 + 链表"的结构。如下图所示 :
+
+!image.png
+
+在JDK17.0版本中，如果一条链表的元素个数达到或超过了TREEIFY_THRESHOLD（默认是8），并且table数组的长度达到或超过了MIN_TREEIFY_CAPACITY（默认是64），底层就会对该链表进行树化，将其转化为一棵红黑树；否则仍采用数组扩容机制。（JDK8.0同）
+
+第一次向集合中添加元素时，底层的table数组会扩容到16，临界值(threshold) = 16 * 0.75 = 12；临界值的存在是为了对扩容起到一个缓冲的效果。当数组中元素的个数达到临界值12后，会对数组进行第二次扩容，16 * 2 = 32，此时临界值 = 32 * 0.75 = 24；当数组中元素的个数达到24后会进行第三次扩容，32 * 2 = 64，此时临界值 = 64 * 0.75 = 48，依次类推。（PS : 此处的0.75是增长因子，我们下面都会说到。）二倍扩容
+
+## LinkedHashSet
+
+java LinkedHashSet 源码分析（深度讲解）-CSDN博客
+
+!image.png
+
+**LinkedHashSet底层是一个LinkedHashMap，是"数组 + 双向链表"的结构。**
+
+LinkedHashSet也**具有Set集合"不可重复"的特点**。但由于**LinkedHashSet根据元素的哈希值来决定元素的存储位置，同时使用双向链表来维护元素的次序**，所以这就使得元素看起来是以插入顺序保存的。
+
+!image.png
+
+如上图所示，每个Entry结点中维护了**before，after两个属性**，其中**通过before指向前一个结点，通过after指向后一个结点**，从而实现**双向链表**。
+不需要扩容这种链表加数组结构
+
+## TreeSet
+
+java TreeSet 和 TreeMap 源码解读-CSDN博客
+
+!image.png
+
+tree不能为null元素
+
+与HashSet实现类不同，TreeSet最大的特点是可以进行排序。**TreeSet底层是二叉树，可以对对象元素进行排序，但是自定义类需要实现comparator接口，可以使用匿名内部类实现该接口，并在匿名内部类中重写compare方法。**
+
+根据此规则，当前TreeSet集合中的元素应该是按字母表顺序来排列的，比方说我现在传入了两个字符串o1和o2，分别为"ABC"和"BBC"，那么此时compareTo方法的返回值就是A的ASCII码值 - B的ASCII码值 = 65 - 66 = -1，而-1是小于0的；那么在使用add方法添加元素时，compareTo方法的这个返回值就决定了添加元素时的排列顺序，关于这一点，在下面的add方法中可以体现。
+
+TreeSet treeSet = new TreeSet(new Comparator() {
+@Override
+public int compare(Object o1, Object o2) {
+return ((String)o1).length() - ((String)o2).length();
+}
+});
+重写TreeSet的排序方法
+
+## TreeMap
+
+!image.png
+
+**reeMap中，key不可以为null，否则会报NullPointerException；**但是**value可以为null**。
+**TreeMap也可以对元素进行自定义排序，实现方式与TreeSet一致**。
+
+# Map
+
+1.Map接口与Collection接口并列存在，与Collection系列的单列集合相对，**Map是双列集合，用于保存具有映射关系的数据Key-Value（键值对）**。
+
+特点
+
+**1°** **Map集合中的元素由key-value键值对（Entry）构成，其中key和value可以由任意引用类型的键值对构成，会封装到HashMap$Node对象中**。
+
+**2°** 键值对中的**key不可重复（底层同HashSet），但是value可以重复**。所以，当key或者value为null时，key只能有一个是null，而value可以有多个是null。
+
+**3°** 键值对中的**key常用String类型来表示**。
+
+**4° key和value之间存在一一映射关系**，即总可以通过指定的key来找到其对应的value。
+
+**5°** **一个key-value键值对存放在一个HashMap$Node类型的对象中**。（HashMap中的Node内部类实现了Map接口中的Entry内部接口）
+
+## HashMap
+
+!image.png
+
+java HashMap 源码分析（深度讲解）_怎么看hashmap底层源码-CSDN博客
+
+HashMap底层维护了Node类型的数组table，默认为null。**HashMap的底层是"数组 + 链表 + 红黑树"的结构**。简单来说，即table数组的元素是一个链表，并且在某些条件下会将链表树化为红黑树。如下图所示 : 
+
+## HashTable
+
+java Hashtable及其子类Properties 源码分析（通俗易懂）_properties和hashtable-CSDN博客
+
+!image.png
+
+Hashtable中保存的也是key-value键值对，不过特别的是，Hashtable键值对中的"key"和"value"都不能为null，否则会抛出nullPointerException异常。
+2° Hashtable中的一些常用方法在用法上基本和HashMap中的一致，比如put方法。
+3° Hashtable中的成员方法用了synchronized关键字修饰，因此Hashtable是线程安全的，而HashMap是线程不安全的。
+
+## TreeMap
+
+java TreeSet 和 TreeMap 源码解读-CSDN博客
+
+!image.png
+
+TreeSet中的元素不能为null，否则会报NullPointerException。
+
+③与HashSet实现类不同，TreeSet最大的特点是可以进行排序。TreeSet底层是二叉树，可以对对象元素进行排序，但是自定义类需要实现comparator接口，可以使用匿名内部类实现该接口，并在匿名内部类中重写compare方法。
+
+## Collection
+
+  **Collections类是java提供的一个操作List，Set和Map等集合的工具类。Collections类中提供了一系列操作集合的静态方法，使用这些方法可以实现对集合元素的排序、查询、修改等操作**。
+
+# **1.static void reverse(List<?> list) :**
+
+**该方法可以对当前List集合中的元素进行反转，颠倒集合中元素的顺序。**
+
+# **2.static void shuffle(List<?> list) :**
+
+**该方法可以对当前List集合进行“洗牌”，对List集合元素进行随机排序，且每次“洗牌”都是随机的**
+
+# **3.static void sort(List<T> list) :**
+
+**该方法可以根据元素的自然顺序对指定的List集合进行升序排序。**
+
+# **4.static <T> void sort(List<T> list, Comparator<? super T> c) :**
+
+**该方法可以根据指定的Comparator指定的顺序对指定的List集合进行升序排序。**
+
+# **5.static void swap(List<?> list, int i, int j) :**
+
+**该方法可以将指定List集合中的i元素和j元素进行交换。**
+
+# **6.static T max(Collection<? extends T> coll) :**
+
+**该方法可以根据元素的自然顺序，获取集合中的最大值。**
+
+# **7.static T min(Collection<? extends T> coll) :**
+
+**该方法可以根据元素的自然顺序，获取集合中的最小值。**
+
+# **8.static int frequency(Collection<?> c, Object o) :**
+
+**该方法可以返回指定元素在指定集合中一共出现的次数。**
+
+# **9.static <T> void copy(List<? super T> dest, List<? extends T> src) :**
+
+**该方法可以将指定的旧集合中的元素拷贝到指定的新集合中。当新集合的长度小于旧集合时，抛出下标越界异常。**
+
+# **10.static <T> boolean replaceAll(List<T> list, T oldVal, T newVal) :**
+
+**该方法可以将集合中指定的旧值全部替换为指定的新值。**
+
+# 泛型
+
+**1°** **interface 接口名<T> 或者 interface 接口名<K, V>**
+
+**2°** **class 类名<E> 或者 class 类名<K, V>**
+
+Δ**注意 :**
+
+**①尖括号<>中可以填写任意字母作为泛型的标识符，一般均为大写**，常用T，K和V，分别表示Type，Key和Value。
+
+**②**字母本身不代表任何值，而代表类型，即程序员手动指定的数据类型。
+
+**③**在指定泛型时，**必须要求**最终确定的**数据类型为引用类型**，不可以是基本数据类型。
+
+**④实际传入的类型可以是泛型指定类型的子类型**。
+
+**⑤若在定义类时使用了泛型，实例化该类时却什么都没有传入，默认使用Object类型。**
